@@ -1,0 +1,394 @@
+body {
+	text-align: center;
+	margin: 0px;
+	font-family: Helvetica, sans-serif;
+	background-color: #69c4db;
+}
+
+h1, h2, h3, h4 {
+	font-family: 'Montserrat', sans-serif;
+	line-height: 0px;
+}
+
+h2 {
+	font-size: 40px;
+}
+
+h1 {
+	font-size: 60px;
+}
+
+#search-term {
+	margin: 0px 0px;
+	width: 90%;
+}
+
+#start-screen {
+	width: 100%;
+	height: 100vh;  /* 100% of viewport height */
+	background-color: #69c4db;
+	position: absolute;
+	z-index: 100;
+	font-family: 'Poiret One', sans-serif;
+	font-size: 50px;
+	color: white;
+	text-align: center;
+}
+
+
+#start-text {
+	margin-top: 80px;
+}
+
+#subtitle {
+	margin-top: 5px;
+	font-size: 22px;
+}
+
+.row {
+	margin: 15px 0px;
+}
+
+
+#settings-area {
+	min-height: 200px;
+	width: 100%;
+	display: flex;
+ 	justify-content: center;
+}
+
+.settings-box {
+	padding: 20px;
+	font-family: 'Montserrat', sans-serif;
+	color: #2d607d;
+	text-align: left;
+	font-size: 20px;
+	margin: 0px 10px;
+	border: solid white 3px;
+	border-radius: 10px;
+	background-color: #9eefff;
+}
+
+#paste-div {
+	display: none;
+}
+
+#challenges-container {
+	display: none;
+	width: 100%;
+}
+
+.challenge {
+	max-width: 150px;
+	height: 100px;
+	border: solid #69c4db 2px;
+	border-radius: 30px;
+	background-color: white;
+	display: inline-block;
+	padding: 10px;
+	text-align: center;
+	font-size: 14px;
+	word-wrap: normal;
+	margin: 0px 2px;
+}
+.challenge:hover {
+	cursor: pointer;
+	background-color: #69c4db;
+	color: white;
+}
+
+#language-settings-box {
+	opacity: 100%;
+}
+
+#paste-input {
+	height: 200px;
+	width: 60vw;
+}
+
+
+#instructions {
+	font-size: 24px;
+	font-family: Helvetica, sans-serif;
+}
+
+#pic {
+	background-image: url("images/birds.png");
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+	display: inline-block;
+	margin-top: 5%;
+	height: 25%;
+	width: 35%;
+}
+
+#answerbox {
+	width: 100%;
+	height: 200px;
+	background-color: white;
+	font-size: 32px;
+	color: #4286f4;
+	text-align: center;
+	position: relative;
+}
+
+#yeah {
+	color: red;
+	background-color: #fcf403;
+	height: 80px;
+	line-height: 80px;
+	font-size: 40px;
+	width: 200px;
+	border: solid red 3px;
+	border-radius: 50%;
+}
+
+.image-container{
+	display: inline-block;
+}
+
+.victory-image-container{
+	width: 100%;
+	text-align: center;
+}
+
+.victory-image-div {
+	height: 300px;
+	width: 300px;
+	display: inline-block;
+}
+
+.float-right {
+	position: absolute;
+	top: 0;
+	right: 20px;
+}
+
+.character-div {
+	height: 400px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+
+#answersentence {				/* made this a separate div inside answer box it could be pushed down */
+	display: inline-block;
+	margin: 100px auto;
+	background-color: white;
+	font-size: 32px;
+	color: #4286f4;
+}
+
+#word-div-container {
+	width: 100%;
+	text-align: center;
+	background-color: #69c4db;
+	padding-top: 10px;
+}
+
+.word-div {
+	height: 80px;
+	padding: 0px 15px;
+	width: auto;
+	border: solid black 2px;
+	border-radius: 20px;
+	text-align: center;
+	font-size: 32px;
+	line-height: 80px;
+	display: inline-block;
+	background-color: white;
+}
+
+
+
+.small-text {
+	font-size: 22px;
+}
+
+.small-box {
+	height: 50px;
+	min-width: 60px;
+	padding: 0px 10px;
+	border: solid black 3px;
+	border-radius: 25px;
+	background-color: white;
+	font-size: 38px;
+	position: absolute;
+	line-height: 50px;
+}
+
+.row {
+	display: flex;
+ 	justify-content: center;
+}
+
+.launcher-button {
+	border: solid white 1px;
+	width: 150px;
+	display: inline-block;
+	border-radius: 50px;
+	margin: 0px 10px;
+	font-size: 40px;
+	padding: 5px;
+}
+
+#load-screen {
+
+}
+
+#quickstart-button {
+	width: 290px;
+}
+
+#save-button{
+	width: 320px;
+}
+
+
+
+.launcher-button:hover {
+	cursor: pointer;
+	background-color: white;
+	color: lightblue;
+	font-weight: bold;
+}
+
+#score-box {
+	bottom: 5px;
+	left: 5px;
+}
+
+#timer {
+	bottom: 5px;
+	right: 5px;
+}
+
+.reset-button{
+	display: none;
+	background-color: lightgreen;
+	opacity: 70%;
+	position: absolute;
+	bottom: 30px;
+	padding: 10px;
+}
+
+.reset-button:hover {
+	opacity: 100%;
+	cursor: pointer;
+}
+
+#main-menu-button{
+	right: 20%;
+}
+
+#try-again-button {
+	left: 20%;
+}
+
+#progress-box-outer {
+  border: solid black 3px;
+  background-color: white;
+  width: 200px;
+  height: 25px;
+  text-align: center;
+  position: absolute;
+  bottom: 10px;
+  left: 300px;
+  font-family: sans-serif;
+  line-height: 25px;
+  font-weight: bold;
+  color: green;
+}
+
+#progress-box-inner {
+  background-color: lightgreen;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#undo-button {
+	bottom: 6px;
+	left: 48%;
+	background-color: #77f2c6;
+	color: white;
+	border: none;
+}
+
+#undo-button:hover {
+	cursor: pointer;
+	background-color: yellow;
+}
+
+#game-over {
+	visibility: hidden;
+	width: 100%;
+	height: 120px;
+	position: absolute;
+	bottom: 0px;
+	background-color: red;
+	color: white;
+	font-size: 40px;
+	text-align: center;
+	line-height: 120px;
+}
+
+.screen {
+	background-color: lightgreen;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100vh;
+	z-index: 120;
+	text-align: center;
+}
+
+
+
+/* desktop screen */
+@media only screen and (min-width: 500px)  {   
+	.word-div:hover {
+		background-color: lightblue;
+		cursor: pointer;
+	}
+
+	#answerbox {
+		height: 300px;
+	}
+
+}
+
+/* mobile screen */
+@media only screen and (max-width: 415px) {
+	.word-div {						
+		height: 50px;
+		padding: 0px 10px;
+		border-radius: 10px;
+		font-size: 32px;
+		line-height: 50px;
+	}
+
+	#score-box {
+		height: 45px;
+		padding: 0px 10px;
+		border-radius: 10px;
+		font-size: 30px;
+		line-height: 45px;
+	}
+
+
+	#timer {
+		height: 45px;
+		padding: 0px 10px;
+		border-radius: 10px;
+		font-size: 30px;
+		line-height: 45px;
+	}
+}
+
+
+

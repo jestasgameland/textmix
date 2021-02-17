@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "picture-quiz-generator",
+  "private_key_id": "111af02054ce03ac7ec000d71665eeaee4b6d249",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC84TC4bO5+Sfgh\nHGk+bTRnBF/xnWgFkCUzFE9gc5ApYwQEJH69Frhu/8o+o/wSZBoH6y23XL5wL/W4\n6CSDHbnGFasAGaIcNzTPhhniOapAeadt2cR0UWa/zg+oGuY05e8SkiNmuFulPeQY\n7IM7NNmtLlPPJkjoTocyp3nTCrLA1ci0I38N0W8EABU/4auv9CpdU74qbr2DWujK\ntibt6AidhccJrD4tfVoE21052qBisN7Tm4+rUBKoCPC/gOsMm3vuS1xe29Dl76Q5\nylPZY0hi/e2MNtxBdjBHH0eHBfyh+Ow+y9hOf8Lmxx/xSwj5G8edwZFdQlaK2G8F\n2hEaDXy9AgMBAAECggEACQP2AjTk31n4LNsWekMr0fz8orjrhanJ328ek3vV9jvC\ngyYbdzrAkT/Gr12+wuv3QsiAH/VJJmwLnl3/nCiM56kSG/OdRXEseqQBKUdXr93U\nAY4i7pW8wfamev9/ByhbKcztlqdsbG3mAiXhOlq9RyMOdLVJm+5foqnUH/WDRGlQ\nLg1G9oi8aBwAXfRm4JYZQaA0entOx43zGwhoJi666ex8vWNaxqF9U7UpTmD+EzDq\nCOkBBXcnQkeJzIU/AkWvEMY/qCdpTleERJBROlA03rSqXhOYte5M81hChjQgWRBa\nKN0qLQUHoXSNx5ctNvxbqkTn5+5T2q7FkeDEVxDDmwKBgQDtiR1WffV8ZRv7ZRJd\nbmBHgiFqVlb4YbXHoSPKJ0jAHy2GUpoqmmmRUTqAz2nMqORjz+8FWVB4iBXwcxGp\nkovRfhD0nSPvonP5VwNpyrTMyiMXPEFGeNJSsS8w3inUOFyyOP3Gay2oqFlaRLTr\npVLgk86eywu+n4A/sPgmBGh66wKBgQDLj9ZSzilszWxEJAusnYKMsNJg67hokkLp\ndcZQZcOm4Ue8UByiN70wr9LquGgyb+oWSYvIp8bUZfa7Yw8RSXKluPgfdi1VQrTc\n1z6ht2FkE3wa0UPMPnwMQwiHENlUjE5zEpz6XzuETlE/EVFYr9F4Kp+cA7c+yMWK\nGpm/V7us9wKBgC3Za4pIYdwTACW0SqkyJu9mlOCbrcnfwmC4H9pjXs2GtxjYVN2o\nVHwyO6KlZnyUlREXD8HujXPWgLWa4Gvk14wmU0uEEW2t48jbHNOMxv1IfyF7BfZ+\nV8qSXNOH7ncCMhJMod9szLFjXWvpGyrpDGhA338THj87NlwU4rEj5K7lAoGAUNNu\nADcHz8HJKU0+rW1lNsPG5ODzueHJW7V95tJhW1O8DhOpKugC4OAPWU+bX9t8ERlm\nvWeQ1SkfTMxKYUzOjurg6m0cFuyDr+RvY/rSWtA5yNQqnWB6FMxRCIAyKxYC2EId\nvnQtx5zpOaeAqzw0aghSk7oN+onxlaJ2RblqNYUCgYEA4QrZgbcn2CCoGaLEgedt\nswyq0hm3hgrW3gYyAiSzEPA8BuaP8cQUCqAn1Yp4Ej4aY2uYpuitHijDhQZZMU0q\nDkIaP37F4riN7yxZ6p+Dtst1GIwP6hh2IaLgcuvtbz4piNN2O/wqe60DaQtjqwIQ\nGvybglGwJvT1k7csveFSmw8=\n-----END PRIVATE KEY-----\n",
+  "client_email": "parse-sentences@picture-quiz-generator.iam.gserviceaccount.com",
+  "client_id": "108871054711404960528",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/parse-sentences%40picture-quiz-generator.iam.gserviceaccount.com"
+}
