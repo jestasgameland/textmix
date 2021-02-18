@@ -42,11 +42,13 @@
 
 			
 			<div class="settings-box">
-				<h3>Randomize?</h3>
+				<h3>Game Mode</h3>
 				<input type="radio" id="radio-randomize-yes" name="randomize" value="yes">
-				<label for="radio-randomize-yes">Yes</label><br>
+				<label for="radio-randomize-yes">Random Sentence Mode</label><br>
 				<input type="radio" id="radio-randomize-no" name="randomize" value="no" checked="checked" >
-				<label for="radio-randomize-no">No</label><br>
+				<label for="radio-randomize-no">Ordered Sentence Mode</label><br>
+				<input type="radio" id="radio-randomize-reading" name="randomize" value="reading-mode" >
+				<label for="radio-randomize-reading">Reading Mode</label><br>
 			</div>
 
 
@@ -80,6 +82,8 @@
 				<label for="radio-japanese">Japanese</label><br>
 				<h3>Search term:</h3>
 				<input type="text" id="search-term" placeholder="(tea, Barack Obama, France...)">
+
+				<div id='birdpic'></div>
 			</div>
 
 		</div>
@@ -109,10 +113,13 @@
 				Create & Share <br><img src='images/share.png' style='height: 35px'>
 			</div>
 		</div>
+		<div class="row">
+			<div id="popup-explanation"></div>
+		</div>
 	
 
 
-		<div id='pic'></div>
+		
 	</div>
 
 	<div id="hidden-text-div" style="visibility: hidden"></div>  
@@ -120,6 +127,7 @@
 
 
 	<div id='answerbox'>
+		<div id='previous-sentences-div'></div>
 		<div id='answersentence'></div>
 	</div>
 	<div id='word-div-container'></div>
@@ -189,13 +197,14 @@
 		var sentenceWords = [];
 		var jumbledSentence = [];
 		var sentenceString = '';
-		var answer = '';
 		var answerBox = document.getElementById('answerbox');
 		var answerSentence = document.getElementById('answersentence');
+		var previousSentences = document.getElementById("previous-sentences-div");
 		var wordsToUndo =[];
 		var wordsEntered = 0;   //number of words that have been clicked so far
 		var wordGroupSize = 5; 
 		var randomMode = false;
+		var readingMode = false; //mode to keep sentences on the screen after they've been completed
 		var clickedDivs = [];
 		var undoCount = -1;
 		var dataSource = "wikipedia";
@@ -207,6 +216,7 @@
 		var imageVisible = false;
 		var finishedSentences = 0;
 		var needToCheckRadios = true;
+		var loadedPresetTexts = false; //not loaded yet
 	//	var textFile;  
 		var winScreen;
 		var youWon;
@@ -221,7 +231,10 @@
 		var saveCode = urlParams.get('saveCode');  //gets what comes after saveCode= in the url (null if there's not saveCode specified)
 
 
+
+
 		//set up start buttons:
+
 		document.getElementById('start-button').addEventListener("click", runApp);
 		document.getElementById('quickstart-button').addEventListener("click", function() {
 			needToCheckRadios = false;
@@ -229,6 +242,22 @@
 			runApp();
 		});
 		document.getElementById('save-button').addEventListener("click", saveAndShare);
+
+		//create popup explanations:
+
+		function createPopupExplanations(button, textToPopup) {
+			button.addEventListener("mouseover", function() {
+				document.getElementById('popup-explanation').style.visibility = "visible";
+				document.getElementById('popup-explanation').innerHTML = textToPopup;
+			});
+			button.addEventListener("mouseout", function() {
+				document.getElementById('popup-explanation').style.visibility = "hidden";
+			})
+		}
+
+		createPopupExplanations(document.getElementById('start-button'), "Start the game with the above settings.");
+		createPopupExplanations(document.getElementById('quickstart-button'), "Start the game with a random text and default settings.");
+		createPopupExplanations(document.getElementById('save-button'), "Create a game with the above settings and get a unique URL to share with students.");
 
 
 // LOAD --------------------------
@@ -257,55 +286,52 @@
 			needToCheckRadios = false;
 		}
 
-		function makePresetTextDivs() {  //getData run this after presetTexts have been loaded
+		function makePresetTextDivs() {  //This function gets run by getData after presetTexts have been loaded
+
+			if (!loadedPresetTexts) {  // ifnot yet loaded
 			var challengesContainer = document.getElementById('challenges-container');
-		/*	var challengesData = [  
-			//"name" is filename of txt files in "texts" folder (don't include .txt)
-				{	name: "moon_and_sleep",
-					description: "Full moons and sleep",
-					type: "paragraph",
-					difficulty: "normal"
-				},
-				{	name: "thin_house",
-					description: "London's thinnest house",
-					type: "article",
-					difficulty: "difficult"
-				},
-				{	name: "sentences",
-					description: "Simple warm-up",
-					type: "sentences",
-					difficulty: "easy"
-				}];
-				*/
+			/*	var challengesData = [  
+				//"name" is filename of txt files in "texts" folder (don't include .txt)
+					{	name: "moon_and_sleep",
+						description: "Full moons and sleep",
+						type: "paragraph",
+						difficulty: "normal"
+					},
+					{	name: "thin_house",
+						description: "London's thinnest house",
+						type: "article",
+						difficulty: "difficult"
+					},
+					{	name: "sentences",
+						description: "Simple warm-up",
+						type: "sentences",
+						difficulty: "easy"
+					}];
+					*/
 
-				//make the preset text (challenge) divs:
-			for (i=0; i<presetTexts.length; i++) {
-				var challengeDiv = document.createElement('div');
-				challengeDiv.setAttribute("class", "challenge");
-				challengeDiv.setAttribute("id", "challenge-"+i);
-				challengesContainer.appendChild(challengeDiv);
+					//make the preset text (challenge) divs:
+				for (i=0; i<presetTexts.length; i++) {
+					var challengeDiv = document.createElement('div');
+					challengeDiv.setAttribute("class", "challenge");
+					challengeDiv.setAttribute("id", "challenge-"+i);
+					challengesContainer.appendChild(challengeDiv);
 
-				challengeDiv.innerHTML = "<b>"+presetTexts[i][0].substr(0,40)+"...</b><br><br>( "+presetTexts[i].length+" sentences )";  //shows first 36 characters and length of text
+					challengeDiv.innerHTML = "<b>"+presetTexts[i][0].substr(0,40)+"...</b><br><br>( "+presetTexts[i].length+" sentences )";  //shows first 36 characters and length of text
 
+				};
 
+				//Once all the divs have been made, add the event listeners (must do this separately so it doesn't keep looping the creation of event listeners over just the variable challengeDiv):
+				for (i=0; i<presetTexts.length; i++) {
+					document.getElementById("challenge-"+i).addEventListener("click", function() {
+						var index = parseInt(this.id.substr(10));  //get the number of the challenge div (same as i, but can't use i here because i is part of this FOR loop, which can't be seen by the function later on)
+						listOfSentences = presetTexts[index];
+						runApp();
+					});
+				}
 			};
 
-			//Once all the divs have been make, add the event listeners (must do this separately so it doesn't keep looping the creation of event listeners over just the variable challengeDiv):
-			for (i=0; i<presetTexts.length; i++) {
-				document.getElementById("challenge-"+i).addEventListener("click", function() {
-					var index = parseInt(this.id.substr(10));  //get the number of the challenge div (same as i, but can't use i here because i is part of this FOR loop, which can't be seen by the function later on)
-					listOfSentences = presetTexts[index];
-					runApp();
-				});
-			}
+			loadedPresetTexts = true;  //prevent it from loading again if this radio button is unclicked and then clicked again
 		}
-
-		function makePresetTextButtons() {
-
-		}
-		
-		
-		
 
 
 
@@ -433,9 +459,15 @@
 
 
 					if(radioName == "randomize") { 
-						if (document.getElementById('radio-randomize-yes').checked == true) {
+						if (choices[i].value == 'yes') {
 							randomMode = true;
-						};	
+						}
+						else if (choices[i].value == 'no') {
+							randomMode = false;
+						}
+						else { //if reading mode is checked
+							readingMode = true;
+						}
 					}	
 					else if (radioName == "difficulty") {
 						wordGroupSize = parseInt(choices[i].value); //radio btn values can only be strings
@@ -569,9 +601,13 @@
 				answerBox.removeChild(imageContainer);
 				imageVisible = false;
 			};
+
+			if (readingMode) {  //move the just-completed sentence to Previous Sentences before deleting answerSentence.innerHTML
+				previousSentences.innerHTML += " " + answerSentence.innerHTML;
+			};
 			
 			answerSentence.innerHTML = '';
-
+			
 			$('.word-div').remove();   //clear all the word divs from the last round (also could do w/o JQuery)
 
 
@@ -602,22 +638,18 @@
 
 				var div = document.createElement('div');
 
-				var word = jumbledSentence[i];
+				var wordChunk = jumbledSentence[i];
 
-				if(word.length > 7 || language=="ja") {
-					div.setAttribute('class','word-div small-text');   //if word has many letters, make font smaller
-				}
-
-				else {
+				if(wordChunk.length > 7) {  //if many words in each div, make font smaller
+					div.setAttribute('class','word-div small-text');   
+				} else {
 					div.setAttribute('class', 'word-div');
 				};
 				
 				div.setAttribute('id', 'word-' + i);
 
-				//div.innerHTML = word;
-
-				for (j=0; j<word.length; j++) {     //add spaces between words
-					div.innerHTML += word[j] + " ";
+				for (j=0; j<wordChunk.length; j++) {     //add spaces between groups of words
+					div.innerHTML += wordChunk[j] + " ";
 				};
 
 				div.addEventListener('click', function() {   //When you click a word/words
@@ -632,14 +664,14 @@
 					answerSentence.innerHTML += clickedDivs[undoCount];    //adds the words from the array to the answerSentence
 					$(this).css('visibility', 'hidden');
 					
-
-					answer = answerSentence.innerHTML;
+					var answer = answerSentence.innerHTML;
 
 					wordsEntered ++;
 
 					if(wordsEntered == i) {            //if all the words have been entered
 
 						if(answer === sentenceString + ' ') {      // IF CORRECT
+							answerSentence.innerHTML = answer.substr(answer[0],answer.length-1) + '.'; //add period to the end
 
 							//Inrease score:
 							score += sentenceWords.length * time;
@@ -772,10 +804,12 @@
 		 	finishedSentences = 0;
 		 	needToCheckRadios = true;
 	 	    sentenceString = '';
-		    answer = '';
 		    wordsToUndo =[];
 		    clickedDivs = [];
 			progress = 0;
+			answerBox.style.backgroundColor = 'white';
+			answerSentence.style.backgroundColor = 'white';
+			answerSentence.style.color = '#4286f4';
 			document.getElementById('progress-box-outer').innerHTML = "Progress: " + progress + "% <div id='progress-box-inner'></div>";
 			document.getElementById('progress-box-inner').style.width = progress;
 		    document.getElementById('answersentence').innerHTML = '';
@@ -790,9 +824,6 @@
 
 			if (tryAgain) {
 				tryAgain = false; //reset it
-				answerBox.style.backgroundColor = 'white';
-				answerSentence.style.backgroundColor = 'white';
-				answerSentence.style.color = '#4286f4';
 				ready();
 				return; //don't do any of the below stuff
 			};
