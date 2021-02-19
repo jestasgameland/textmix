@@ -58,16 +58,19 @@ h1 {
 }
 
 .settings-box {
-	padding: 20px;
+	padding: 10px;
 	font-family: 'Montserrat', sans-serif;
 	color: #2d607d;
 	text-align: left;
-	font-size: 20px;
+	font-size: 16px;
 	margin: 0px 10px;
 	border: solid white 3px;
 	border-radius: 10px;
 	background-color: #9eefff;
+	position: relative;
 }
+
+
 
 #paste-div {
 	display: none;
@@ -112,15 +115,17 @@ h1 {
 	font-family: Helvetica, sans-serif;
 }
 
-#pic {
+#birdpic {
 	background-image: url("images/birds.png");
 	background-position: center;
 	background-size: contain;
 	background-repeat: no-repeat;
 	display: inline-block;
-	margin-top: 5%;
-	height: 25%;
-	width: 35%;
+	position: absolute;
+	top: -100px;
+	right: 75px;
+	height: 100px;
+	width: 100px;
 }
 
 #answerbox {
@@ -173,12 +178,20 @@ h1 {
 }
 
 
-#answersentence {				/* made this a separate div inside answer box it could be pushed down */
+#answersentence {				
 	display: inline-block;
 	margin: 100px auto;
+}
+
+#previous-sentences-div {
+	margin: 10px auto;
 	background-color: white;
-	font-size: 32px;
+	font-size: 28px;
+	text-align: left;
 	color: #4286f4;
+	position: absolute;
+	top: 0px;
+	display: none;
 }
 
 #word-div-container {
@@ -222,6 +235,15 @@ h1 {
 .row {
 	display: flex;
  	justify-content: center;
+ 	position: relative;
+}
+
+#popup-explanation {
+	visibility: hidden;
+	font-size: 26px;
+	font-family: sans-serif;
+	width: 60%;
+	text-align: center;
 }
 
 .launcher-button {
@@ -232,10 +254,6 @@ h1 {
 	margin: 0px 10px;
 	font-size: 40px;
 	padding: 5px;
-}
-
-#load-screen {
-
 }
 
 #quickstart-button {
@@ -350,7 +368,7 @@ h1 {
 
 
 /* desktop screen */
-@media only screen and (min-width: 500px)  {   
+@media only screen and (min-width: 800px)  {   
 	.word-div:hover {
 		background-color: lightblue;
 		cursor: pointer;
@@ -363,13 +381,17 @@ h1 {
 }
 
 /* mobile screen */
-@media only screen and (max-width: 415px) {
+@media only screen and (max-width: 800px) {
 	.word-div {						
 		height: 50px;
 		padding: 0px 10px;
 		border-radius: 10px;
 		font-size: 32px;
 		line-height: 50px;
+	}
+
+	.settings-box {
+		font-size: 14px;
 	}
 
 	#score-box {

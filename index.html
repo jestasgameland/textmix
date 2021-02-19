@@ -26,33 +26,47 @@
 
 		<div id="settings-area">
 
-			<div class="settings-box">
-				<h3>Difficulty:</h3>
+			<div class="settings-box" id="difficulty-settings">
+				<h3>Chunk size:</h3>
 				<input type="radio" id="radio-easy" name="difficulty" value="6">  
-				<label for="radio-easy">Easy</label><br>
+				<label for="radio-easy">6 words (Easiest)</label><br>
 				<input type="radio" id="radio-normal" name="difficulty" value="4" checked="checked">
-				<label for="radio-normal">Normal</label><br>
+				<label for="radio-normal">5 words</label><br>
 				<input type="radio" id="radio-hard" name="difficulty" value="3">
-				<label for="radio-hard">Hard</label><br>
+				<label for="radio-hard">4 words</label><br>
 				<input type="radio" id="radio-expert" name="difficulty" value="2">
-				<label for="radio-expert">Expert</label><br>
+				<label for="radio-expert">2 words</label><br>
 				<input type="radio" id="radio-crazy" name="difficulty" value="1">
-				<label for="radio-crazy">Crazy</label><br>
+				<label for="radio-crazy">1 word (Hardest)</label><br>
 			</div>
 
 			
-			<div class="settings-box">
+			<div class="settings-box" id='game-mode-settings'>
 				<h3>Game Mode</h3>
-				<input type="radio" id="radio-randomize-yes" name="randomize" value="yes">
-				<label for="radio-randomize-yes">Random Sentence Mode</label><br>
 				<input type="radio" id="radio-randomize-no" name="randomize" value="no" checked="checked" >
-				<label for="radio-randomize-no">Ordered Sentence Mode</label><br>
+				<label for="radio-randomize-no">Ordered Sentences</label><br>
+				<input type="radio" id="radio-randomize-yes" name="randomize" value="yes">
+				<label for="radio-randomize-yes">Random Sentences</label><br>
 				<input type="radio" id="radio-randomize-reading" name="randomize" value="reading-mode" >
 				<label for="radio-randomize-reading">Reading Mode</label><br>
 			</div>
 
+			<div class="settings-box" id='learning-mode-settings'>
+				<h3>Learning Mode</h3>
+				<input type="radio" id="radio-learning-syntax" name="learning" value="syntax" checked="checked" >
+				<label for="radio-learning-syntax">Focus on syntax/word order</label><br>
+				<input type="radio" id="radio-learning-articles" name="learning" value="articles" >
+				<label for="radio-learning-articles">Focus on articles</label><br>
+				<input type="radio" id="radio-learning-prepositions" name="learning" value="prepositions">
+				<label for="radio-learning-prepositions">Focus on prepositions</label><br>
+				<input type="radio" id="radio-learning-grammar" name="learning" value="grammar">
+				<label for="radio-learning-grammar">Focus on grammatical words</label><br>
+				<input type="radio" id="radio-learning-cloze" name="learning" value="cloze">
+				<label for="radio-learning-cloze">nth word cloze (n=chunk size)</label><br>
+			</div>
 
-			<div class="settings-box">
+
+			<div class="settings-box" id='text-source-settings'>
 				<h3>Text source:</h3>
 
 				<input onclick="languagePopup(true); pastePopup(false); challengesPopup(false)" type="radio" id="radio-wikipedia" name="datasource" value="wikipedia" checked="checked">
@@ -72,12 +86,12 @@
 
 			</div>
 
-			<div class="settings-box popup-settings" id='language-settings-box'>
+			<div class="settings-box popup-settings" id='language-settings'>
 				<h3>Language:</h3>
 				<input type="radio" id="radio-simple-english" name="language" value="simple" checked="checked" >
 				<label for="radio-simple-english">Simple English</label><br>
 				<input type="radio" id="radio-english" name="language" value="en">
-				<label for="radio-english">Normal English (Difficult!)</label><br>
+				<label for="radio-english">Normal English</label><br>
 				<input type="radio" id="radio-japanese" name="language" value="ja">
 				<label for="radio-japanese">Japanese</label><br>
 				<h3>Search term:</h3>
@@ -159,8 +173,8 @@
 				opacity = '50%';
 				clickable = "none";
 			};
-			document.getElementById('language-settings-box').style.opacity = opacity;
-			document.getElementById('language-settings-box').style.pointerEvents = clickable;
+			document.getElementById('language-settings').style.opacity = opacity;
+			document.getElementById('language-settings').style.pointerEvents = clickable;
 		}
 
 		function pastePopup(yes) {
@@ -203,12 +217,16 @@
 		var wordsToUndo =[];
 		var wordsEntered = 0;   //number of words that have been clicked so far
 		var wordGroupSize = 5; 
+		var clozeSentence = [];
+		var clozeWords = [];
 		var randomMode = false;
 		var readingMode = false; //mode to keep sentences on the screen after they've been completed
 		var clickedDivs = [];
 		var undoCount = -1;
 		var dataSource = "wikipedia";
+		var searchTerm;
 		var language = "simple";
+		var learningMode;
 		var progress = 0;
 		var windowWidth = window.innerWidth;
 		var imageDiv;
@@ -245,12 +263,12 @@
 
 		//create popup explanations:
 
-		function createPopupExplanations(button, textToPopup) {
-			button.addEventListener("mouseover", function() {
+		function createPopupExplanations(thingToHoverOver, textToPopup) {
+			thingToHoverOver.addEventListener("mouseover", function() {
 				document.getElementById('popup-explanation').style.visibility = "visible";
 				document.getElementById('popup-explanation').innerHTML = textToPopup;
 			});
-			button.addEventListener("mouseout", function() {
+			thingToHoverOver.addEventListener("mouseout", function() {
 				document.getElementById('popup-explanation').style.visibility = "hidden";
 			})
 		}
@@ -258,6 +276,15 @@
 		createPopupExplanations(document.getElementById('start-button'), "Start the game with the above settings.");
 		createPopupExplanations(document.getElementById('quickstart-button'), "Start the game with a random text and default settings.");
 		createPopupExplanations(document.getElementById('save-button'), "Create a game with the above settings and get a unique URL to share with students.");
+
+		createPopupExplanations(document.getElementById('difficulty-settings'), "Choose how each sentence is split. '1' means a traditional word jumble where each word must be unscrambled.");
+		createPopupExplanations(document.getElementById('game-mode-settings'), "Preset sentences randomly or in order.  In 'reading mode', completed sentences stay on the screen so you can ready the next sentence in context.");
+		createPopupExplanations(document.getElementById('learning-mode-settings'), "Choose what kind of practice the activity should provide.");
+		createPopupExplanations(document.getElementById('text-source-settings'), "Select the source of text. If 'Wikipedia', also select language and search term.");
+		createPopupExplanations(document.getElementById('language-settings'), "(For Wikipedia text) Choose the language and search term to get an article exerpt. Case sensitive - must capitalize proper nouns!");
+
+
+		
 
 
 // LOAD --------------------------
@@ -277,13 +304,12 @@
 
 		loadText();
 
-
 // LOAD --------------------------
-		
+
+
 		//set up challenges
 		function loadPresetTexts() {
 			getData(null, 'get all texts', null, null, null);  //This will set up presetTexts array
-			needToCheckRadios = false;
 		}
 
 		function makePresetTextDivs() {  //This function gets run by getData after presetTexts have been loaded
@@ -375,7 +401,7 @@
 			}
 
 			if(dataSource == "wikipedia"){
-				var searchTerm = document.getElementById('search-term').value;
+				searchTerm = document.getElementById('search-term').value;
 				wikiSearch(searchTerm, language, "hidden-text-div",	writeWikiText);
 			} 
 			else {
@@ -436,6 +462,11 @@
 
 
 		function runApp() {
+				searchTerm = document.getElementById('search-term').value;
+				if (dataSource=='wikipedia' && searchTerm == ''){
+					alert('Please enter a search term!');
+					return;
+				}
 
 				if (needToLoadText == "yes") {  //if ready() and getText() have already been run via  make_text_file.js
 					makeLoadScreen()
@@ -475,6 +506,13 @@
 					else if (radioName == "datasource") {
 						dataSource = choices[i].value;
 					}
+					else if (radioName == "learning") {
+						learningMode = choices[i].value;
+						if (choices[i].value != 'syntax') {
+							wordGroupSize = 1; //if articles or prepositions, set the word group size to 1
+						}
+
+					}
 					else {
 						language = choices[i].value;
 					};
@@ -503,13 +541,43 @@
 			return sentenceString;
 		}
 
-		function splitSentence() {
+		function splitSentence() {  //what to do with the sentence once it done been got!
 
-			getOneSentence();
+			sentenceWords = getOneSentence().split(' ');
 
-			sentenceWords = getOneSentence().split(' ');   
-			sentenceWords = chunkArray(sentenceWords, wordGroupSize);  // This is an array of arrays (chunks of words) in CORRECT ORDER, so if I can just make the "answer" variable an array of arrays, it could work.  Maybe there cna be a displayed answer without commas, and then a hidden "array answer" that would be actually what gets checked against this to see if the user is correct
-			jumbledSentence = shuffle(sentenceWords);   
+			switch (learningMode) {  
+				case 'articles':
+					sentenceWords[sentenceWords.length-1] += '.';  //add period to last word
+					count++  //get 2 sentences instead of 1 (better for articles, prepositions, etc)
+					sentenceWords = sentenceWords.concat(getOneSentence().split(' '));
+					sentenceWords[sentenceWords.length-1] += '.';
+					clozeSentence = [];  //reset it after completing a sentence
+					clozeWords = [];
+					for (i=0; i<sentenceWords.length; i++) {
+						if (sentenceWords[i] == 'a' || sentenceWords[i] == 'an' || sentenceWords[i] == 'the') {
+							clozeWords.push(sentenceWords[i]); //these will be the word divs to click
+							clozeSentence.push("_____"); //add a blank to the new clozeSentence array
+							//this will be the sentence with blanks, added to the answerbox later
+						} else{  //if not an article
+							clozeSentence.push(sentenceWords[i]) //add the word to the new clozeSentence array
+						}
+					}
+					jumbledSentence = shuffle(clozeWords);
+				break;
+
+				case 'prepositions':
+
+				break;
+
+				case 'cloze':
+				
+				break;
+
+				default:
+					console.log('Run as normal word jumble, no need to do anything');   
+					sentenceWords = chunkArray(sentenceWords, wordGroupSize);  // Split up into word groups/chunks.  This is an array of arrays (chunks of words) in CORRECT ORDER.  Each array has a number of words equal to wordGroupSize.
+					jumbledSentence = shuffle(sentenceWords);   //mix up the arrays within the array
+			};
 		};
 
 
@@ -527,6 +595,7 @@
 				checkRadio('difficulty');
 				checkRadio('datasource');
 				checkRadio('language');
+				checkRadio('learning');
 			};
 		}
 
@@ -568,7 +637,6 @@
 					break;
 
 				default:   //if user chose to use the preset string of sentences
-
 					listOfSentences = preMadeList.split(". ");
 					ready();
 			};	
@@ -603,6 +671,7 @@
 			};
 
 			if (readingMode) {  //move the just-completed sentence to Previous Sentences before deleting answerSentence.innerHTML
+				previousSentences.style.display = "block";
 				previousSentences.innerHTML += " " + answerSentence.innerHTML;
 			};
 			
@@ -627,18 +696,22 @@
 			undoButton.id = "undo-button";
 			undoButton.innerHTML = "Undo";
 			undoButton.addEventListener("click", undo);
-
-
 			answerBox.appendChild(undoButton);
 
 
 			wordsEntered = 0;
 
-			for(i=0; i<sentenceWords.length; i++) {
+			if (learningMode != 'syntax') {  // If cloze mode
+				for(i=0; i<clozeSentence.length; i++) {  //clozeSentence is an array - must loop through to put each word in answer box as a string (or else it will show up with commas if set to innerHTML)
+					answerSentence.innerHTML += clozeSentence[i] + ' ';  
+				};
+			}
+
+			for(i=0; i<jumbledSentence.length; i++) {
 
 				var div = document.createElement('div');
 
-				var wordChunk = jumbledSentence[i];
+				var wordChunk = jumbledSentence[i];  //if cloze mode, then jumbledSentence is actually word bank to fill in blanks.  Instead of making divs from the words IN the sentence, only use the words REMOVED from the sentence (Articles, prepositions, etc.)
 
 				if(wordChunk.length > 7) {  //if many words in each div, make font smaller
 					div.setAttribute('class','word-div small-text');   
@@ -648,9 +721,15 @@
 				
 				div.setAttribute('id', 'word-' + i);
 
-				for (j=0; j<wordChunk.length; j++) {     //add spaces between groups of words
-					div.innerHTML += wordChunk[j] + " ";
+				 
+				for (j=0; j<wordChunk.length; j++) {     
+					if (learningMode == 'syntax') { 
+						div.innerHTML += wordChunk[j] + " ";
+					} else { //add spaces between groups of words (not needed in cloze mode)
+						div.innerHTML += wordChunk[j];
+					}
 				};
+				
 
 				div.addEventListener('click', function() {   //When you click a word/words
 
@@ -661,7 +740,15 @@
 					undoCount ++;  
 					console.log("undoCount = " + undoCount)	;				
 					clickedDivs.push(this.innerHTML);  //puts the clicked word(s) into an array
-					answerSentence.innerHTML += clickedDivs[undoCount];    //adds the words from the array to the answerSentence
+
+					if (learningMode != 'syntax') {  //if cloze mode:
+						answerSentence.innerHTML = answerSentence.innerHTML.replace('_____', this.innerHTML);  //replace the FIRST blank with the clicked word  (not sure if  "this" here refers to the clicked word div)
+					}
+					else {  //if normal word jumble (syntax) mode:
+						answerSentence.innerHTML += clickedDivs[undoCount];  //add the words from the array to the answerSentence
+					}
+
+					// do these things no matter which learning mode:
 					$(this).css('visibility', 'hidden');
 					
 					var answer = answerSentence.innerHTML;
@@ -669,8 +756,7 @@
 					wordsEntered ++;
 
 					if(wordsEntered == i) {            //if all the words have been entered
-
-						if(answer === sentenceString + ' ') {      // IF CORRECT
+						if(answer == sentenceString + ' ' || answer == sentenceWords.join(" ") + ' ' && learningMode!='syntax') {  // IF CORRECT   (cloze modes do not add an extra space at the end)
 							answerSentence.innerHTML = answer.substr(answer[0],answer.length-1) + '.'; //add period to the end
 
 							//Inrease score:
@@ -807,6 +893,7 @@
 		    wordsToUndo =[];
 		    clickedDivs = [];
 			progress = 0;
+			previousSentences.style.display = "none";
 			answerBox.style.backgroundColor = 'white';
 			answerSentence.style.backgroundColor = 'white';
 			answerSentence.style.color = '#4286f4';
