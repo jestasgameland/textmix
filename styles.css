@@ -214,7 +214,16 @@ h1 {
 	background-color: white;
 }
 
+#skip-button {
+	background-color: #fbbdff;
+	color: #7c1982;
+	border: solid #7c1982 5px;
+}
 
+#skip-button:hover {
+	color: #fbbdff;
+	background-color: #7c1982;
+}
 
 .small-text {
 	font-size: 22px;
@@ -328,7 +337,7 @@ h1 {
   left: 0;
 }
 
-#undo-button {
+.game-button {
 	bottom: 6px;
 	left: 48%;
 	background-color: #77f2c6;
@@ -336,7 +345,7 @@ h1 {
 	border: none;
 }
 
-#undo-button:hover {
+.game-button:hover {
 	cursor: pointer;
 	background-color: yellow;
 }

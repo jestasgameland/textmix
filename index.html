@@ -53,8 +53,8 @@
 
 			<div class="settings-box" id='learning-mode-settings'>
 				<h3>Learning Mode</h3>
-				<input type="radio" id="radio-learning-syntax" name="learning" value="syntax" checked="checked" >
-				<label for="radio-learning-syntax">Focus on syntax/word order</label><br>
+				<input type="radio" id="radio-learning-jumble" name="learning" value="jumble" checked="checked" >
+				<label for="radio-learning-jumble">Focus on syntax/word order</label><br>
 				<input type="radio" id="radio-learning-articles" name="learning" value="articles" >
 				<label for="radio-learning-articles">Focus on articles</label><br>
 				<input type="radio" id="radio-learning-prepositions" name="learning" value="prepositions">
@@ -208,25 +208,34 @@
 		var count = 0;
 		var listOfSentences = [];
 		var rand;
+		var rainbowMode = false;
 		var sentenceWords = [];
 		var jumbledSentence = [];
 		var sentenceString = '';
 		var answerBox = document.getElementById('answerbox');
 		var answerSentence = document.getElementById('answersentence');
+		var answer;
 		var previousSentences = document.getElementById("previous-sentences-div");
 		var wordsToUndo =[];
+		var undoHistory =[];
+		var indexOfBlank;
 		var wordsEntered = 0;   //number of words that have been clicked so far
 		var wordGroupSize = 5; 
 		var clozeSentence = [];
 		var clozeWords = [];
 		var randomMode = false;
 		var readingMode = false; //mode to keep sentences on the screen after they've been completed
+		var articleList = ['a','an','the'];
+		var prepList = ['in','at','on','for','of','with','out','to','from'];
+		var grammarList = [];
 		var clickedDivs = [];
-		var undoCount = -1;
+		var undoCount = 0;
+		var skip = false;
 		var dataSource = "wikipedia";
 		var searchTerm;
 		var language = "simple";
 		var learningMode;
+		var foundArticle = false;
 		var progress = 0;
 		var windowWidth = window.innerWidth;
 		var imageDiv;
@@ -249,7 +258,7 @@
 		var saveCode = urlParams.get('saveCode');  //gets what comes after saveCode= in the url (null if there's not saveCode specified)
 
 
-
+		loadTxtFile("100commonwords.txt");  //load the grammarList
 
 		//set up start buttons:
 
@@ -298,7 +307,7 @@
 				getData(saveCode, 'read one text', null, null, null); //this sets existingData.  saveCode tells which array in the array of arrays in the JSON file.  This array will be set as listOfSentences.
 				console.log("Loaded text from JSON file.");
 			} else{
-				console.log("No need to load text; settings must be chosen.");
+				console.log("Didn't load text; settings must be chosen.");
 			};
 		}
 
@@ -508,7 +517,7 @@
 					}
 					else if (radioName == "learning") {
 						learningMode = choices[i].value;
-						if (choices[i].value != 'syntax') {
+						if (choices[i].value != 'jumble') {
 							wordGroupSize = 1; //if articles or prepositions, set the word group size to 1
 						}
 
@@ -524,6 +533,17 @@
 		//a premade string for testing:
 		const preMadeList = "A library is a great blessing. A library is said to be the storehouse of culture. The various books by the different authors and poets form a library. A society is known by the number of good libraries it has. Man\'s craving for knowledge is eternal. Libraries preserve various types of old and new books. There are also periodicals and daily papers to meet the demands of the people. In all ages, libraries have been considered the best medium of public instructions. An academic library is an essential part of an educational institution. It plays an important role in schools, colleges and universities. The books are issued to the students in term of weekly, fortnightly or monthly basis. Generally a reading-room is attached to this library for reading. In a library we get books on different subjects. There are books on literature, on history, hygiene, science and arts. A library is essential to the cultural progress of a country. It helps the country to fight illiteracy. It is an aid to research work and teaching. It satisfies a thirst for education. It is a boon to the poor and the middle class people. A civilized man cannot do without the library. Circulating libraries should be established in rural areas to fight illiteracy. As libraries spread education, every village and town should have one.";
 
+
+		function cleanSentence(sentence) {
+			try {	//if there aren't any periods or newlines to replace, this prevents an error 
+				sentence = sentence.replace(".",""); //remove any period at the end of the sentence (if it's the last sentence, this period won't have been removed by split('.'))
+				sentence = sentence.replace(".\n",".");
+				sentence = sentence.replace( /[\r\n]+/gm, "" ); //replace all carriage returns, etc.
+			} catch{}; 
+
+			return sentence
+		}
+
 		function getOneSentence() {
 
 			if(dataSource == "wikipedia" && needToLoadText != "yes"){  //a.k.a. if we still need to send a request to wikipedia API
@@ -537,53 +557,71 @@
 				sentenceString = listOfSentences[rand];
 			} else {
 				sentenceString = listOfSentences[count];
+
 			};
+			cleanSentence(sentenceString) ;
 			return sentenceString;
 		}
 
 		function splitSentence() {  //what to do with the sentence once it done been got!
 
-			sentenceWords = getOneSentence().split(' ');
+			try{
+				sentenceWords = getOneSentence().split(' ');
+			} catch{};
 
-			switch (learningMode) {  
-				case 'articles':
-					sentenceWords[sentenceWords.length-1] += '.';  //add period to last word
-					count++  //get 2 sentences instead of 1 (better for articles, prepositions, etc)
+			if (learningMode!= 'jumble') {     //if cloze mode
+
+				foundArticle = false;
+				sentenceWords[sentenceWords.length-1] += '.';  //add period to last word
+
+				if (count < listOfSentences.length-2) {  //as long as there are still 2 sentences left to get
+					count++;  //get 2 sentences instead of 1 (better for articles, prepositions, etc)
+					finishedSentences++;
 					sentenceWords = sentenceWords.concat(getOneSentence().split(' '));
 					sentenceWords[sentenceWords.length-1] += '.';
-					clozeSentence = [];  //reset it after completing a sentence
-					clozeWords = [];
-					for (i=0; i<sentenceWords.length; i++) {
-						if (sentenceWords[i] == 'a' || sentenceWords[i] == 'an' || sentenceWords[i] == 'the') {
-							clozeWords.push(sentenceWords[i]); //these will be the word divs to click
-							clozeSentence.push("_____"); //add a blank to the new clozeSentence array
-							//this will be the sentence with blanks, added to the answerbox later
-						} else{  //if not an article
-							clozeSentence.push(sentenceWords[i]) //add the word to the new clozeSentence array
-						}
+				};
+			
+				clozeSentence = [];  //reset it after completing a sentence
+				clozeWords = [];
+
+				for (i=0; i<sentenceWords.length; i++) {
+
+					if (learningMode=='articles' && articleList.includes(sentenceWords[i]) || learningMode=='prepositions' && prepList.includes(sentenceWords[i]) || learningMode=='grammar' && grammarList.includes(sentenceWords[i])) {  //if the word is an article/preposition
+						clozeWords.push(sentenceWords[i]); //these will be the word divs to click
+						clozeSentence.push("_____"); //add a blank to the new clozeSentence array
+						//this will be the sentence with blanks, added to the answerbox later
+						foundArticle = true;
+					} else{  //if not an article
+						clozeSentence.push(sentenceWords[i]) //add the word to the new clozeSentence array
 					}
-					jumbledSentence = shuffle(clozeWords);
-				break;
+				}
 
-				case 'prepositions':
-
-				break;
-
-				case 'cloze':
-				
-				break;
-
-				default:
-					console.log('Run as normal word jumble, no need to do anything');   
-					sentenceWords = chunkArray(sentenceWords, wordGroupSize);  // Split up into word groups/chunks.  This is an array of arrays (chunks of words) in CORRECT ORDER.  Each array has a number of words equal to wordGroupSize.
-					jumbledSentence = shuffle(sentenceWords);   //mix up the arrays within the array
-			};
+				jumbledSentence = shuffle(clozeWords);
+			}
+			else {  //if normal word jumble (jumble) learning mode
+				console.log('Run as normal word jumble, no need to do anything');   
+				sentenceWords = chunkArray(sentenceWords, wordGroupSize);  // Split up into word groups/chunks.  This is an array of arrays (chunks of words) in CORRECT ORDER.  Each array has a number of words equal to wordGroupSize.
+				jumbledSentence = shuffle(sentenceWords);   //mix up the arrays within the array
+			}
 		};
 
 
 		//must wait until Ajax is done getting Wikipedia text to run the following:
 		//(it's the callback function of wikiSearch)
 		function ready() {
+			if (skip) {
+				count++; 
+
+							// do these things no matter which learning mode:
+				$(this).css('visibility', 'hidden');
+
+				wordsEntered ++;
+
+				
+				checkWin();
+				skip=false;
+				
+			};
 			splitSentence();
 			makeDivs();
 		}
@@ -600,7 +638,22 @@
 		}
 
 
-		const getText = function() {
+		function loadTxtFile(filename) {
+		//If loading from a txt file on computer
+			var req = new XMLHttpRequest();
+			req.open("GET", filename, true);
+			req.send();
+			var list;
+			req.onreadystatechange = function() {
+				if(this.readyState==4 && this.status==200) {
+					console.log('Loaded ' + filename);
+					grammarList = this.responseText.split(' ');
+				};
+			};		
+		}
+
+
+		function getText() {
 
 			getSettings();
 
@@ -608,21 +661,6 @@
 
 				case "preset text":
 					//Do nothing - listOfSentences was already set up via loadPresetTexts()
-
-				//If loading from a txt file on computer
-				/*	var req = new XMLHttpRequest();
-					req.open("GET", "test.txt", true);
-					req.send();
-
-					req.onreadystatechange = function() {
-						if(this.readyState==4 && this.status==200) {
-							listOfSentences = this.responseText.split('.');
-							console.log('Made sentence array');
-							//Note: I need to put ready() inside this onreadystatechange function so it only gets run AFTER the AJAX call is finished.  Otherwise it would be using the blank strings initialized as global variables at the top.
-							ready();
-						};
-					};
-				*/
 					ready();
 					break;
 
@@ -664,6 +702,9 @@
 			//reset stuff:
 			answerBox.style.backgroundColor = 'white';
 			answerSentence.style.color = '#4286f4';
+			undoHistory = [];
+			undoCount = 0;
+			clickedDivs = [];
 
 			if (imageVisible) {
 				answerBox.removeChild(imageContainer);
@@ -679,9 +720,23 @@
 			
 			$('.word-div').remove();   //clear all the word divs from the last round (also could do w/o JQuery)
 
+			// If the sentence has no articles/prepositions/grammar words, create skip button (cloze modes only):
+			if(learningMode != 'jumble' && !foundArticle) {
+				var skipButton = document.createElement("div");
+				skipButton.className = "word-div";
+				skipButton.id = "skip-button";
+				skipButton.innerHTML = "SKIP!";
+				skip = true;
+				skipButton.addEventListener("click", ready);
+				document.getElementById("word-div-container").appendChild(skipButton);
+			}
+
 
 			function undo() {
-				answerSentence.innerHTML = answerSentence.innerHTML.replace(clickedDivs[undoCount], "");   //erase the undone word(s) from answerSentence.innerHTML
+
+				answerSentence.innerHTML = undoHistory[undoCount-1];  // undo by returning to the last answerSentence
+				undoHistory.splice(undoHistory.length-1, 1);  //remove the last entry from undoHistory
+
 				clickedDivs.splice(clickedDivs.length-1, 1);  //erase the undone word(s) from clickedDivs
 				document.getElementById(wordsToUndo[wordsToUndo.length-1]).style.visibility = "visible";   //bring the last clicked word div back (its ID will be the last item in the wordsToUndo array)
 				wordsToUndo.splice(wordsToUndo.length-1, 1);  //delete the undone word from wordsToUndo array
@@ -691,22 +746,27 @@
 			}
 
 			//Make the "undo" button:
-			var undoButton = document.createElement("div");
-			undoButton.className = "small-box";
-			undoButton.id = "undo-button";
-			undoButton.innerHTML = "Undo";
-			undoButton.addEventListener("click", undo);
-			answerBox.appendChild(undoButton);
+			if(foundArticle || learningMode=='jumble') {
+				var undoButton = document.createElement("div");
+				undoButton.className = "small-box game-button";
+				undoButton.id = "undo-button";
+				undoButton.innerHTML = "Undo";
+				undoButton.addEventListener("click", undo);
+				answerBox.appendChild(undoButton);
+			}
 
 
 			wordsEntered = 0;
 
-			if (learningMode != 'syntax') {  // If cloze mode
+			// Display the cloze sentence:
+			if (learningMode != 'jumble') {  // If cloze mode
 				for(i=0; i<clozeSentence.length; i++) {  //clozeSentence is an array - must loop through to put each word in answer box as a string (or else it will show up with commas if set to innerHTML)
-					answerSentence.innerHTML += clozeSentence[i] + ' ';  
+					answerSentence.innerHTML += clozeSentence[i] + ' ';
 				};
+				answerSentence.innerHTML = answerSentence.innerHTML.slice(0,answerSentence.innerHTML.length-1);//remove space at end
 			}
 
+			//create the word divs:
 			for(i=0; i<jumbledSentence.length; i++) {
 
 				var div = document.createElement('div');
@@ -723,115 +783,136 @@
 
 				 
 				for (j=0; j<wordChunk.length; j++) {     
-					if (learningMode == 'syntax') { 
+					if (learningMode == 'jumble') { 
 						div.innerHTML += wordChunk[j] + " ";
 					} else { //add spaces between groups of words (not needed in cloze mode)
 						div.innerHTML += wordChunk[j];
 					}
 				};
 				
-
-				div.addEventListener('click', function() {   //When you click a word/words
-
-					answerSentence = document.getElementById('answersentence');  //get the current status of the answer
-
-					//The following lines of code are reversed by the undo() function:
-					wordsToUndo.push(this.id);
-					undoCount ++;  
-					console.log("undoCount = " + undoCount)	;				
-					clickedDivs.push(this.innerHTML);  //puts the clicked word(s) into an array
-
-					if (learningMode != 'syntax') {  //if cloze mode:
-						answerSentence.innerHTML = answerSentence.innerHTML.replace('_____', this.innerHTML);  //replace the FIRST blank with the clicked word  (not sure if  "this" here refers to the clicked word div)
-					}
-					else {  //if normal word jumble (syntax) mode:
-						answerSentence.innerHTML += clickedDivs[undoCount];  //add the words from the array to the answerSentence
-					}
-
-					// do these things no matter which learning mode:
-					$(this).css('visibility', 'hidden');
-					
-					var answer = answerSentence.innerHTML;
-
-					wordsEntered ++;
-
-					if(wordsEntered == i) {            //if all the words have been entered
-						if(answer == sentenceString + ' ' || answer == sentenceWords.join(" ") + ' ' && learningMode!='syntax') {  // IF CORRECT   (cloze modes do not add an extra space at the end)
-							answerSentence.innerHTML = answer.substr(answer[0],answer.length-1) + '.'; //add period to the end
-
-							//Inrease score:
-							score += sentenceWords.length * time;
-							finishedSentences ++;
-							document.getElementById('score-box').innerHTML = "Score: " + score;	
-							
-							//Increase progress meter:
-							var totalSentences = listOfSentences.length;
-							progress = Math.floor(100*(finishedSentences / totalSentences));
-							document.getElementById('progress-box-outer').innerHTML = "Progress: " + progress + "% <div id='progress-box-inner'></div>";
-							document.getElementById('progress-box-inner').style.width = progress*2 + "px";
-
-							if (progress == 100) {   // all sentences are finished - YOU WIN!
-								win();
-								return;  //stop reading this block of code (stuff below is for if you've not yet won the game)
-							};
-
-							var color = randomColor();
-							document.body.style.backgroundColor = color;
-							document.getElementById('word-div-container').style.backgroundColor = color;
-							
-							if (randomMode) {
-								listOfSentences.splice(listOfSentences.indexOf(sentenceString), 1);  //remove the sentence so it doesn't come up against
-							} else {
-								count ++   //move to the next sentence in listOfSentences (only if randomMode is off)
-							};
-
-							splitSentence();
-							displayCharacter();
-							setTimeout(makeDivs, 1000);  //Wait a sec before you get the next sentence
-						}
-
-						else {  //GAME OVER
-							document.getElementById("undo-button").style.visibility = "hidden";
-							answerBox.style.backgroundColor = 'red';
-							answerSentence.style.backgroundColor = 'red';
-							answerSentence.style.color = 'white';
-							answerSentence.innerHTML = sentenceString;
-							$("#game-over").css("visibility", "visible");
-							$(".reset-button").css("display", "inline-block");
-				
-							document.getElementById("main-menu-button").addEventListener("click", resetApp);
-							document.getElementById("try-again-button").addEventListener("click", function() {
-									tryAgain = true;
-									resetApp();
-								});
-						};
-					};
-				});
+				div.addEventListener('click', clickedWord); 
 
 				document.getElementById('word-div-container').appendChild(div);
 			};
 		};
 
 
+		function clickedWord() {   //When you click a word/words
+
+			answerSentence = document.getElementById('answersentence');  //get the current status of the answer
+
+			wordsToUndo.push(this.id);
+			undoHistory.push(answerSentence.innerHTML);  // save the sentence BEFORE blank is filled
+			undoCount ++;  
+			console.log("undoCount = " + undoCount)	;				
+			clickedDivs.push(this.innerHTML);  //puts the clicked word(s) into an array
+			
+
+			if (learningMode != 'jumble') {  //if cloze mode:
+				answerSentence.innerHTML = answerSentence.innerHTML.replace('_____', this.innerHTML);  //replace the FIRST blank with the clicked word
+			}
+			else {  //if normal word jumble (jumble) mode:
+				answerSentence.innerHTML += clickedDivs[undoCount-1];  //add the word(s) to answerSentence
+			}
+
+			// do these things no matter which learning mode:
+			$(this).css('visibility', 'hidden');
+			
+
+			wordsEntered ++;
+
+			if(wordsEntered == i) {   //if all the words in the senetence have been entered
+				checkWin();
+			}
+		};
+
+
+		function checkWin() {
+
+				answer = answerSentence.textContent;  //must use innerText, not innerHTML because &nbsp characters sometimes come up in wikipedia - innerText just renders them as normal spaces
+
+				// IF CORRECT   (cloze modes do not add an extra space at the end)
+				if(answer == sentenceString + ' ' || answer == sentenceWords.join(" ") && learningMode!='jumble' || skip==true) {  //if you're skipping this last sentence, automatically win, don't even check for correctness
+
+				//below line not needed, it seems?  
+				//	answerSentence.innerHTML = answer.substr(answer[0],answer.length-1) + '.'; //add period to the end
+
+					//Inrease score:
+					score += sentenceWords.length * time;
+					finishedSentences ++;
+					document.getElementById('score-box').innerHTML = "Score: " + score;	
+					
+					//Increase progress meter:
+					var totalSentences = listOfSentences.length;
+					progress = Math.floor(100*(finishedSentences / totalSentences));
+					document.getElementById('progress-box-outer').innerHTML = "Progress: " + progress + "% <div id='progress-box-inner'></div>";
+					document.getElementById('progress-box-inner').style.width = progress*2 + "px";
+
+					if (progress == 100) {   // all sentences are finished - YOU WIN!
+						win();
+						return;  //stop reading this block of code (stuff below is for if you've not yet won the game)
+					};
+
+					if (rainbowMode) {
+						changeScreenColor();				
+					};
+
+					// if not won yet, get the next sentence(s):
+					if (randomMode) {
+						listOfSentences.splice(listOfSentences.indexOf(sentenceString), 1);  //remove the sentence so it doesn't come up again
+					} else {
+						count ++   //move to the next sentence in listOfSentences (only if randomMode is off)
+					};
+
+					splitSentence();
+					displayCharacter();
+					setTimeout(makeDivs, 1000);  //Wait a sec before you get the next sentence
+				}
+
+				else {  //GAME OVER
+					document.getElementById("undo-button").style.visibility = "hidden";
+					answerBox.style.backgroundColor = 'red';
+					answerSentence.style.backgroundColor = 'red';
+					answerSentence.style.color = 'white';
+
+					//display the correct answer:
+					if (learningMode !='jumble') {
+						answerSentence.innerHTML = sentenceWords.join(" ");
+					} else {
+					answerSentence.innerHTML = sentenceString;
+					}
+					$("#game-over").css("visibility", "visible");
+					$(".reset-button").css("display", "inline-block");
+		
+					document.getElementById("main-menu-button").addEventListener("click", resetApp);
+					document.getElementById("try-again-button").addEventListener("click", function() {
+							tryAgain = true;
+							resetApp();
+						});
+				};
+			};
+		
 
 
 
 		//Generate random background colors:
 
 		function randomColor() {
-
 		        var alphabet = "a b c d e f 0 1 2 3 4 5 6 7 8 9".split(" ");
-		        
 		        var hex1 = alphabet[Math.floor(Math.random()*alphabet.length)];
 		        var hex2 = alphabet[Math.floor(Math.random()*alphabet.length)];
 		        var hex3 = alphabet[Math.floor(Math.random()*alphabet.length)];
 		        var hex4 = alphabet[Math.floor(Math.random()*alphabet.length)];
 		        var hex5 = alphabet[Math.floor(Math.random()*alphabet.length)];
 		        var hex6 = alphabet[Math.floor(Math.random()*alphabet.length)];
-		        
 		        var colorHex = "#" + hex1 + hex2 + hex3 + hex4 + hex5 + hex6;
-		    
 		        return colorHex;
+		}
+
+		function changeScreenColor() {
+			var color = randomColor();
+			document.body.style.backgroundColor = color;
+			document.getElementById('word-div-container').style.backgroundColor = color;
 		}
 
 		function incrementTime() {
@@ -885,8 +966,9 @@
 			saved = false;
 			score = 0;
 		 	count = 0;
+		 	skip = false;
 		 	wordsEntered = 0;
-		 	undoCount = -1;
+		 	undoCount = 0;
 		 	finishedSentences = 0;
 		 	needToCheckRadios = true;
 	 	    sentenceString = '';
