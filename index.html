@@ -14,6 +14,13 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
 
+	<!--for featured image on linkedin:  -->
+	<meta name="description" content="TextMix - Created by Brendon Albertson" />
+	<meta name="title" property="og:title" content="TextMix - Created by Brendon Albertson" />
+	<meta property="og:type" content="Website" />
+	<meta name="image" property="og:image" content="http://www.eslquiz.net/screenshot-textmix.png" />
+	<meta name="description" property="og:description" content="TextMix - Created by Brendon Albertson" /><meta name="author" content="Brendon Albertson" />
+
 </head>
 	
 <body>
@@ -131,10 +138,10 @@
 			<div id="popup-explanation"></div>
 		</div>
 	
-
-
-		
 	</div>
+
+	<!-- ABOVE HTML IS FOR START SCREEN -->
+	<!-- BELOW HTML IS FOR GAME -->
 
 	<div id="hidden-text-div" style="visibility: hidden"></div>  
 	<!--This is where the Wikipedia search result text goes (can't find a way to put it in a variable since it's Ajax onreadystatechange)-->
@@ -144,10 +151,19 @@
 		<div id='previous-sentences-div'></div>
 		<div id='answersentence'></div>
 	</div>
-	<div id='word-div-container'></div>
-	<div id='score-box' class='small-box'> Score: 0      </div>
-	<div id='timer' class='small-box'>     Time: 0       </div>
-	<div id='game-over'>                   GAME OVER     <br>
+
+	<div id='word-div-container'>
+		<div id='skip-button' class='small-box game-button'> Next! </div>
+	</div>
+
+	<div id='undo-container'>
+		<div id='undo-button' class='small-box game-button'> Undo </div>
+	</div>
+
+	<div id='score-box' class='small-box'>   Score: 0      </div>
+	<div id='timer' class='small-box'>       Time: 0       </div>
+	<div id='quit-button' class='small-box'> Quit        </div>
+	<div id='game-over'>                     GAME OVER     <br>
 		<div class='small-box reset-button' id='try-again-button'> 	Try Again     </div>  
 		<div class='small-box reset-button' id='main-menu-button'>	Main Menu     </div> 
 	</div>
@@ -237,6 +253,8 @@
 		var learningMode;
 		var foundArticle = false;
 		var progress = 0;
+		var progressBoxOuter = document.getElementById('progress-box-outer');	
+		var progressBoxInner = document.getElementById('progress-box-inner');
 		var windowWidth = window.innerWidth;
 		var imageDiv;
 		var imageContainer;
@@ -256,6 +274,16 @@
 		const urlParams = new URLSearchParams(window.location.search); //gets everything after the ?
 		var needToLoadText = urlParams.get('loadsavedtext');
 		var saveCode = urlParams.get('saveCode');  //gets what comes after saveCode= in the url (null if there's not saveCode specified)
+		var undoButton = document.getElementById("undo-button");
+		var skipButton = document.getElementById("skip-button");
+		var quitButton = document.getElementById("quit-button");
+
+			undoButton.addEventListener("click", undo);
+			skipButton.addEventListener("click", ready);
+			quitButton.addEventListener("click", resetApp);
+
+		//	document.getElementById("undo-button").style.display = "none";  //avoid appearing on game over screen
+			document.getElementById("skip-button").style.display = "none";  
 
 
 		loadTxtFile("100commonwords.txt");  //load the grammarList
@@ -295,7 +323,6 @@
 
 		
 
-
 // LOAD --------------------------
 
 		function loadText() {
@@ -325,24 +352,7 @@
 
 			if (!loadedPresetTexts) {  // ifnot yet loaded
 			var challengesContainer = document.getElementById('challenges-container');
-			/*	var challengesData = [  
-				//"name" is filename of txt files in "texts" folder (don't include .txt)
-					{	name: "moon_and_sleep",
-						description: "Full moons and sleep",
-						type: "paragraph",
-						difficulty: "normal"
-					},
-					{	name: "thin_house",
-						description: "London's thinnest house",
-						type: "article",
-						difficulty: "difficult"
-					},
-					{	name: "sentences",
-						description: "Simple warm-up",
-						type: "sentences",
-						difficulty: "easy"
-					}];
-					*/
+
 
 					//make the preset text (challenge) divs:
 				for (i=0; i<presetTexts.length; i++) {
@@ -483,6 +493,7 @@
 				else {  //neet to load text via getText() below
 					$("#start-screen").animate({left: windowWidth}, 500);  //push it from the left over 500ms
 					setInterval(incrementTime, 100);
+					progressBoxOuter.style.display = "block";
 					getText();
 				}		
 		}
@@ -530,10 +541,6 @@
 		};
 
 		
-		//a premade string for testing:
-		const preMadeList = "A library is a great blessing. A library is said to be the storehouse of culture. The various books by the different authors and poets form a library. A society is known by the number of good libraries it has. Man\'s craving for knowledge is eternal. Libraries preserve various types of old and new books. There are also periodicals and daily papers to meet the demands of the people. In all ages, libraries have been considered the best medium of public instructions. An academic library is an essential part of an educational institution. It plays an important role in schools, colleges and universities. The books are issued to the students in term of weekly, fortnightly or monthly basis. Generally a reading-room is attached to this library for reading. In a library we get books on different subjects. There are books on literature, on history, hygiene, science and arts. A library is essential to the cultural progress of a country. It helps the country to fight illiteracy. It is an aid to research work and teaching. It satisfies a thirst for education. It is a boon to the poor and the middle class people. A civilized man cannot do without the library. Circulating libraries should be established in rural areas to fight illiteracy. As libraries spread education, every village and town should have one.";
-
-
 		function cleanSentence(sentence) {
 			try {	//if there aren't any periods or newlines to replace, this prevents an error 
 				sentence = sentence.replace(".",""); //remove any period at the end of the sentence (if it's the last sentence, this period won't have been removed by split('.'))
@@ -541,7 +548,7 @@
 				sentence = sentence.replace( /[\r\n]+/gm, "" ); //replace all carriage returns, etc.
 			} catch{}; 
 
-			return sentence
+			return sentence;
 		}
 
 		function getOneSentence() {
@@ -563,41 +570,43 @@
 			return sentenceString;
 		}
 
-		function splitSentence() {  //what to do with the sentence once it done been got!
+		function makeClozeSentence() {
+			foundArticle = false;
+			sentenceWords[sentenceWords.length-1] += '.';  //add period to last word
+
+			if (count < listOfSentences.length-2) {  //as long as there are still 2 sentences left to get
+				count++;  //get 2 sentences instead of 1 (better for articles, prepositions, etc)
+				finishedSentences++;
+				sentenceWords = sentenceWords.concat(getOneSentence().split(' '));
+				sentenceWords[sentenceWords.length-1] += '.';
+			};
+		
+			clozeSentence = [];  //reset it after completing a sentence
+			clozeWords = [];
+
+			for (i=0; i<sentenceWords.length; i++) {
+
+				if (learningMode=='articles' && articleList.includes(sentenceWords[i]) || learningMode=='prepositions' && prepList.includes(sentenceWords[i]) || learningMode=='grammar' && grammarList.includes(sentenceWords[i])) {  //if the word is an article/preposition
+					clozeWords.push(sentenceWords[i]); //these will be the word divs to click
+					clozeSentence.push("_____"); //add a blank to the new clozeSentence array
+					//this will be the sentence with blanks, added to the answerbox later
+					foundArticle = true;
+				} else{  //if not an article
+					clozeSentence.push(sentenceWords[i]) //add the word to the new clozeSentence array
+				}
+			}
+
+			jumbledSentence = shuffle(clozeWords);
+		}
+
+		function prepareSentence() {  //what to do with the sentence once it done been got!
 
 			try{
 				sentenceWords = getOneSentence().split(' ');
 			} catch{};
 
-			if (learningMode!= 'jumble') {     //if cloze mode
+			if (learningMode!= 'jumble') { makeClozeSentence() }  //if cloze mode
 
-				foundArticle = false;
-				sentenceWords[sentenceWords.length-1] += '.';  //add period to last word
-
-				if (count < listOfSentences.length-2) {  //as long as there are still 2 sentences left to get
-					count++;  //get 2 sentences instead of 1 (better for articles, prepositions, etc)
-					finishedSentences++;
-					sentenceWords = sentenceWords.concat(getOneSentence().split(' '));
-					sentenceWords[sentenceWords.length-1] += '.';
-				};
-			
-				clozeSentence = [];  //reset it after completing a sentence
-				clozeWords = [];
-
-				for (i=0; i<sentenceWords.length; i++) {
-
-					if (learningMode=='articles' && articleList.includes(sentenceWords[i]) || learningMode=='prepositions' && prepList.includes(sentenceWords[i]) || learningMode=='grammar' && grammarList.includes(sentenceWords[i])) {  //if the word is an article/preposition
-						clozeWords.push(sentenceWords[i]); //these will be the word divs to click
-						clozeSentence.push("_____"); //add a blank to the new clozeSentence array
-						//this will be the sentence with blanks, added to the answerbox later
-						foundArticle = true;
-					} else{  //if not an article
-						clozeSentence.push(sentenceWords[i]) //add the word to the new clozeSentence array
-					}
-				}
-
-				jumbledSentence = shuffle(clozeWords);
-			}
 			else {  //if normal word jumble (jumble) learning mode
 				console.log('Run as normal word jumble, no need to do anything');   
 				sentenceWords = chunkArray(sentenceWords, wordGroupSize);  // Split up into word groups/chunks.  This is an array of arrays (chunks of words) in CORRECT ORDER.  Each array has a number of words equal to wordGroupSize.
@@ -611,18 +620,14 @@
 		function ready() {
 			if (skip) {
 				count++; 
-
-							// do these things no matter which learning mode:
-				$(this).css('visibility', 'hidden');
-
+				// do these things no matter which learning mode:
+				skipButton.style.display = "none";
+				undoButton.style.display = "inline-block";  //put back undo button (was removed by addSkipButton())
 				wordsEntered ++;
-
-				
 				checkWin();
 				skip=false;
-				
 			};
-			splitSentence();
+			prepareSentence();
 			makeDivs();
 		}
 
@@ -695,6 +700,32 @@
 				};
 			};  */
 
+		function undo() {
+
+			if (undoCount>0) {
+
+				answerSentence.innerHTML = undoHistory[undoCount-1];  // undo by returning to the last answerSentence
+				undoHistory.splice(undoHistory.length-1, 1);  //remove the last entry from undoHistory
+
+				clickedDivs.splice(clickedDivs.length-1, 1);  //erase the undone word(s) from clickedDivs
+				document.getElementById(wordsToUndo[wordsToUndo.length-1]).style.visibility = "visible";   //bring the last clicked word div back (its ID will be the last item in the wordsToUndo array)
+				wordsToUndo.splice(wordsToUndo.length-1, 1);  //delete the undone word from wordsToUndo array
+
+				wordsEntered --;
+				undoCount --;
+				console.log("undoCount = " + undoCount)	;
+			}	else {console.log("Nothing to undo.")};
+		}
+
+
+		function addSkipButton() {
+			skipButton.style.display = "inline-block"
+			undoButton.style.display = "none";
+			skip = true;
+		}
+
+
+
 		function makeDivs() {
 
 			time = 500;
@@ -721,39 +752,7 @@
 			$('.word-div').remove();   //clear all the word divs from the last round (also could do w/o JQuery)
 
 			// If the sentence has no articles/prepositions/grammar words, create skip button (cloze modes only):
-			if(learningMode != 'jumble' && !foundArticle) {
-				var skipButton = document.createElement("div");
-				skipButton.className = "word-div";
-				skipButton.id = "skip-button";
-				skipButton.innerHTML = "SKIP!";
-				skip = true;
-				skipButton.addEventListener("click", ready);
-				document.getElementById("word-div-container").appendChild(skipButton);
-			}
-
-
-			function undo() {
-
-				answerSentence.innerHTML = undoHistory[undoCount-1];  // undo by returning to the last answerSentence
-				undoHistory.splice(undoHistory.length-1, 1);  //remove the last entry from undoHistory
-
-				clickedDivs.splice(clickedDivs.length-1, 1);  //erase the undone word(s) from clickedDivs
-				document.getElementById(wordsToUndo[wordsToUndo.length-1]).style.visibility = "visible";   //bring the last clicked word div back (its ID will be the last item in the wordsToUndo array)
-				wordsToUndo.splice(wordsToUndo.length-1, 1);  //delete the undone word from wordsToUndo array
-				wordsEntered --;
-				undoCount --;
-				console.log("undoCount = " + undoCount)	;
-			}
-
-			//Make the "undo" button:
-			if(foundArticle || learningMode=='jumble') {
-				var undoButton = document.createElement("div");
-				undoButton.className = "small-box game-button";
-				undoButton.id = "undo-button";
-				undoButton.innerHTML = "Undo";
-				undoButton.addEventListener("click", undo);
-				answerBox.appendChild(undoButton);
-			}
+			if(learningMode != 'jumble' && !foundArticle) { addSkipButton() };
 
 
 			wordsEntered = 0;
@@ -794,6 +793,8 @@
 
 				document.getElementById('word-div-container').appendChild(div);
 			};
+
+			
 		};
 
 
@@ -846,7 +847,8 @@
 					var totalSentences = listOfSentences.length;
 					progress = Math.floor(100*(finishedSentences / totalSentences));
 					document.getElementById('progress-box-outer').innerHTML = "Progress: " + progress + "% <div id='progress-box-inner'></div>";
-					document.getElementById('progress-box-inner').style.width = progress*2 + "px";
+					var width = 800;
+					document.getElementById('progress-box-inner').style.width = (progress/100)*width + "px";
 
 					if (progress == 100) {   // all sentences are finished - YOU WIN!
 						win();
@@ -864,101 +866,40 @@
 						count ++   //move to the next sentence in listOfSentences (only if randomMode is off)
 					};
 
-					splitSentence();
+					undoButton.style.display = "none";
+
+					prepareSentence();
 					displayCharacter();
 					setTimeout(makeDivs, 1000);  //Wait a sec before you get the next sentence
 				}
 
-				else {  //GAME OVER
-					document.getElementById("undo-button").style.visibility = "hidden";
-					answerBox.style.backgroundColor = 'red';
-					answerSentence.style.backgroundColor = 'red';
-					answerSentence.style.color = 'white';
-
-					//display the correct answer:
-					if (learningMode !='jumble') {
-						answerSentence.innerHTML = sentenceWords.join(" ");
-					} else {
-					answerSentence.innerHTML = sentenceString;
-					}
-					$("#game-over").css("visibility", "visible");
-					$(".reset-button").css("display", "inline-block");
-		
-					document.getElementById("main-menu-button").addEventListener("click", resetApp);
-					document.getElementById("try-again-button").addEventListener("click", function() {
-							tryAgain = true;
-							resetApp();
-						});
-				};
+				else { gameOver() }; //GAME OVER
 			};
+
+
+		function gameOver() {
+			undoButton.style.display = "none";
+			progressBoxOuter.style.display = "none";
+			answerBox.style.backgroundColor = 'red';
+			answerSentence.style.backgroundColor = 'red';
+			answerSentence.style.color = 'white';
+
+			//display the correct answer:
+			if (learningMode !='jumble') {
+				answerSentence.innerHTML = sentenceWords.join(" ");
+			} else {
+			answerSentence.innerHTML = sentenceString;
+			}
+			$("#game-over").css("visibility", "visible");
+			$(".reset-button").css("display", "inline-block");
+
+			document.getElementById("main-menu-button").addEventListener("click", resetApp);
+			document.getElementById("try-again-button").addEventListener("click", function() {
+				tryAgain = true;
+				resetApp();
+			});
+		}
 		
-
-
-
-		//Generate random background colors:
-
-		function randomColor() {
-		        var alphabet = "a b c d e f 0 1 2 3 4 5 6 7 8 9".split(" ");
-		        var hex1 = alphabet[Math.floor(Math.random()*alphabet.length)];
-		        var hex2 = alphabet[Math.floor(Math.random()*alphabet.length)];
-		        var hex3 = alphabet[Math.floor(Math.random()*alphabet.length)];
-		        var hex4 = alphabet[Math.floor(Math.random()*alphabet.length)];
-		        var hex5 = alphabet[Math.floor(Math.random()*alphabet.length)];
-		        var hex6 = alphabet[Math.floor(Math.random()*alphabet.length)];
-		        var colorHex = "#" + hex1 + hex2 + hex3 + hex4 + hex5 + hex6;
-		        return colorHex;
-		}
-
-		function changeScreenColor() {
-			var color = randomColor();
-			document.body.style.backgroundColor = color;
-			document.getElementById('word-div-container').style.backgroundColor = color;
-		}
-
-		function incrementTime() {
-
-			var timeDiv = document.getElementById('timer');
-
-			if (time == 0) {
-				//stop decreasing time
-				//$("#game-over").css("visibility", "visible");
-				//setTimeout(resetApp, 2000);
-			}
-
-			else {
-				time --;
-				timeDiv.innerHTML = "Time: " + time; 
-			}
-		}
-
-		function displayCharacter() {
-			var imageFile = "images/playing" + Math.floor(Math.random()*7+1) +".gif";
-			imageDiv = document.createElement("div");
-			imageContainer = document.createElement("div");
-			var yeah = document.createElement("div");
-
-			yeah.innerHTML = "GREAT!";
-			//yeah.style.color = "#0aff4b";
-			//yeah.style.backgroundColor = "#fcf403";
-			yeah.id = "yeah";
-
-			imageContainer.className = "image-container float-right";
-			
-			imageDiv.className = "character-div";
-			imageDiv.style.height = "200px";
-			imageDiv.style.background = "url('" + imageFile + "')";
-			imageDiv.style.backgroundSize = "contain";
-			imageDiv.style.backgroundRepeat = "no-repeat";
-
-			imageContainer.appendChild(imageDiv);
-			imageContainer.appendChild(yeah);
-
-			answerBox.appendChild(imageContainer);
-
-			imageVisible = true;
-		}
-
-
 
 		function resetApp() {
 			
@@ -979,9 +920,12 @@
 			answerBox.style.backgroundColor = 'white';
 			answerSentence.style.backgroundColor = 'white';
 			answerSentence.style.color = '#4286f4';
-			document.getElementById('progress-box-outer').innerHTML = "Progress: " + progress + "% <div id='progress-box-inner'></div>";
-			document.getElementById('progress-box-inner').style.width = progress;
+
+			progressBoxOuter.innerHTML = "Progress: 0% <div id='progress-box-inner'></div>";
+			document.getElementById('progress-box-inner').style.width = 0;
 		    document.getElementById('answersentence').innerHTML = '';
+		    skipButton.style.display = "none";
+		    undoButton.style.display = "inline-block";
 
 			if (youWon) {
 				document.body.removeChild(winScreen);
@@ -1053,6 +997,74 @@
 		});
 
 
+		//Generate random background colors:
+
+		function randomColor() {
+		        var alphabet = "a b c d e f 0 1 2 3 4 5 6 7 8 9".split(" ");
+		        var hex1 = alphabet[Math.floor(Math.random()*alphabet.length)];
+		        var hex2 = alphabet[Math.floor(Math.random()*alphabet.length)];
+		        var hex3 = alphabet[Math.floor(Math.random()*alphabet.length)];
+		        var hex4 = alphabet[Math.floor(Math.random()*alphabet.length)];
+		        var hex5 = alphabet[Math.floor(Math.random()*alphabet.length)];
+		        var hex6 = alphabet[Math.floor(Math.random()*alphabet.length)];
+		        var colorHex = "#" + hex1 + hex2 + hex3 + hex4 + hex5 + hex6;
+		        return colorHex;
+		}
+
+		function changeScreenColor() {
+			var color = randomColor();
+			document.body.style.backgroundColor = color;
+			document.getElementById('word-div-container').style.backgroundColor = color;
+		}
+
+		function incrementTime() {
+
+			var timeDiv = document.getElementById('timer');
+
+			if (time == 0) {
+				//stop decreasing time
+				//$("#game-over").css("visibility", "visible");
+				//setTimeout(resetApp, 2000);
+			}
+
+			else {
+				time --;
+				timeDiv.innerHTML = "Time: " + time; 
+			}
+		}
+
+		function displayCharacter() {
+			var imageFile = "images/playing" + Math.floor(Math.random()*7+1) +".gif";
+			imageDiv = document.createElement("div");
+			imageContainer = document.createElement("div");
+			var yeah = document.createElement("div");
+
+			yeah.innerHTML = "GREAT!";
+			//yeah.style.color = "#0aff4b";
+			//yeah.style.backgroundColor = "#fcf403";
+			yeah.id = "yeah";
+
+			imageContainer.className = "image-container float-right";
+			
+			imageDiv.className = "character-div";
+			imageDiv.style.height = "200px";
+			imageDiv.style.background = "url('" + imageFile + "')";
+			imageDiv.style.backgroundSize = "contain";
+			imageDiv.style.backgroundRepeat = "no-repeat";
+
+			imageContainer.appendChild(imageDiv);
+			imageContainer.appendChild(yeah);
+
+			answerBox.appendChild(imageContainer);
+
+			imageVisible = true;
+		}
+
+
+
+		//a premade string for testing:
+		const preMadeList = "A library is a great blessing. A library is said to be the storehouse of culture. The various books by the different authors and poets form a library. A society is known by the number of good libraries it has. Man\'s craving for knowledge is eternal. Libraries preserve various types of old and new books. There are also periodicals and daily papers to meet the demands of the people. In all ages, libraries have been considered the best medium of public instructions. An academic library is an essential part of an educational institution. It plays an important role in schools, colleges and universities. The books are issued to the students in term of weekly, fortnightly or monthly basis. Generally a reading-room is attached to this library for reading. In a library we get books on different subjects. There are books on literature, on history, hygiene, science and arts. A library is essential to the cultural progress of a country. It helps the country to fight illiteracy. It is an aid to research work and teaching. It satisfies a thirst for education. It is a boon to the poor and the middle class people. A civilized man cannot do without the library. Circulating libraries should be established in rural areas to fight illiteracy. As libraries spread education, every village and town should have one.";
+
 
 
 		//JQuery version of AJAX request::
@@ -1066,7 +1078,7 @@
 		    				  // "data" is the contents of the text file
 				listOfSentences = data.split('\n');
 				console.log('Made sentence array');
-				splitSentence();
+				prepareSentence();
 				makeDivs();
 
 		 	});

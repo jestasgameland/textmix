@@ -4,7 +4,7 @@
 		try {	//if there aren't any periods or newlines to replace, this prevents an error 
 			txt = txt.replace(".  ",". "); //standardize # of spaces after period to one
 			txt = txt.replace(".\n",". "); 
-			txt = txt.replace( /[\r\n]+/gm, "" ); //replace all carriage returns, etc.
+			txt = txt.replace( "/[\r\n]+/gm", "" ); //replace all carriage returns, etc.
 		} catch{}; 
 
 		return txt;
@@ -36,7 +36,7 @@
 					cleanText(text);
 				};
 
-				document.getElementById(divId).innerText = text;
+				document.getElementById(divId).innerHTML = text;
 
 				doThisNext();
 			};
