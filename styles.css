@@ -1,13 +1,17 @@
-body {
+html, body {
+    font-size: 40px;      
+    margin:0; /* remove default margin */
+    padding:0; /* remove default padding */
+    width:100%; /* take full browser width */
+    height:100%; /* take full browser height*/
 	text-align: center;
-	margin: 0px;
 	font-family: Helvetica, sans-serif;
 	background-color: #69c4db;
 }
 
 h1, h2, h3, h4 {
 	font-family: 'Montserrat', sans-serif;
-	line-height: 0px;
+	line-height: 0;
 }
 
 h2 {
@@ -18,14 +22,16 @@ h1 {
 	font-size: 60px;
 }
 
+
+
 #search-term {
-	margin: 0px 0px;
+	margin: 0;
 	width: 90%;
 }
 
 #start-screen {
 	width: 100%;
-	height: 100vh;  /* 100% of viewport height */
+	height: 100%;  /* 100% of viewport height */
 	background-color: #69c4db;
 	position: absolute;
 	z-index: 100;
@@ -33,8 +39,10 @@ h1 {
 	font-size: 50px;
 	color: white;
 	text-align: center;
+    margin: 0;
+    left: 0;
+    top: 0;
 }
-
 
 #start-text {
 	margin-top: 80px;
@@ -43,10 +51,11 @@ h1 {
 #subtitle {
 	margin-top: 5px;
 	font-size: 22px;
+	z-index: 0;
 }
 
 .row {
-	margin: 15px 0px;
+	margin: 15px 0;
 }
 
 
@@ -63,7 +72,7 @@ h1 {
 	color: #2d607d;
 	text-align: left;
 	font-size: 16px;
-	margin: 0px 10px;
+	margin: 0 10px;
 	border: solid white 3px;
 	border-radius: 10px;
 	background-color: #9eefff;
@@ -92,7 +101,7 @@ h1 {
 	text-align: center;
 	font-size: 14px;
 	word-wrap: normal;
-	margin: 0px 2px;
+	margin: 0 2px;
 }
 .challenge:hover {
 	cursor: pointer;
@@ -115,7 +124,7 @@ h1 {
 	font-family: Helvetica, sans-serif;
 }
 
-#birdpic {
+#birdpic-desktop, #birdpic-mobile {
 	background-image: url("images/birds.png");
 	background-position: center;
 	background-size: contain;
@@ -128,9 +137,19 @@ h1 {
 	width: 100px;
 }
 
+#birdpic-mobile {
+	display: none;
+	height: 70px;
+	width: 70px;
+	top: -70px;
+	right: 10px;
+	z-index: -1;
+	
+}
+
 #answerbox {
 	width: 100%;
-	height: 200px;
+	height: 300px;
 	background-color: white;
 	font-size: 32px;
 	color: #4286f4;
@@ -138,7 +157,7 @@ h1 {
 	position: relative;
 }
 
-#yeah {
+#message {
 	color: red;
 	background-color: #fcf403;
 	height: 80px;
@@ -171,7 +190,6 @@ h1 {
 }
 
 .character-div {
-	height: 400px;
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -190,7 +208,7 @@ h1 {
 	text-align: left;
 	color: #4286f4;
 	position: absolute;
-	top: 0px;
+	top: 0;
 	display: none;
 }
 
@@ -203,7 +221,7 @@ h1 {
 
 .word-div {
 	height: 80px;
-	padding: 0px 15px;
+	padding: 0 15px;
 	min-width: 50px;
 	border-radius: 40px;
 	text-align: center;
@@ -213,21 +231,11 @@ h1 {
 	background-color: white;
 }
 
-
-.small-text {
-	font-size: 22px;
+.word-div:hover {
+	background-color: lightblue;
+	cursor: pointer;
 }
 
-.small-box {
-	height: 50px;
-	min-width: 60px;
-	padding: 0px 10px;
-	border-radius: 25px;
-	background-color: white;
-	font-size: 30px;
-	position: absolute;
-	line-height: 50px;
-}
 
 #undo-button, #skip-button {
 	position: static;
@@ -235,20 +243,12 @@ h1 {
 	display: inline-block;
 }
 
-#quit-button {
-	position: absolute;
-	margin-top: 20px;
-	display: inline-block;	
-}
-
-#quit-button:hover {
-	cursor: pointer;
-}
 
 .row {
 	display: flex;
  	justify-content: center;
  	position: relative;
+ 	width: 100%;
 }
 
 #popup-explanation {
@@ -264,8 +264,8 @@ h1 {
 	width: 150px;
 	display: inline-block;
 	border-radius: 50px;
-	margin: 0px 10px;
-	font-size: 40px;
+	margin: 0 10px;
+	font-size: .8em;
 	padding: 5px;
 }
 
@@ -286,33 +286,75 @@ h1 {
 	font-weight: bold;
 }
 
-#score-box {
-	bottom: 5px;
-	left: 5px;
+
+#status-bar {
+	height: 110px;
+	padding: 0;
+	width: 100%;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	display: none;
+	text-align: center;
 }
 
-#timer {
-	bottom: 5px;
-	right: 5px;
+.small-box {
+	height: 50px;
+	min-width: 60px;
+	padding: 0 10px;
+	border-radius: 25px;
+	background-color: white;
+	font-size: .7em;
+	line-height: 50px;
+	color: #3291a8;
+}
+
+#score-box, #timer, #quit-button {
+	display: inline-block;
+	margin: 5px 20px;
 }
 
 #quit-button {
-	bottom: 75px;
-	right: 5px;
+	background-color: orange;
+	color: white;
+}
+#quit-button:hover {
+	background-color: white;
+	color: orange;
+	cursor: pointer;
+}
+
+#progress-box-outer {
+  border-radius: 25px;
+  background-color: white;
+  width: 60vw;
+  height: 50px;
+  text-align: center;
+  font-family: sans-serif;
+  line-height: 50px;
+  font-size: 30px;
+  font-weight: bold;
+  color: green;
+  position: relative;
+  display: inline-block;
+}
+
+#progress-box-inner {
+  background-color: lightgreen;
+  border-radius: inherit;
+  height: inherit;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 60%;
+  display: inline-block;
 }
 
 .reset-button{
 	display: none;
-	background-color: lightgreen;
-	opacity: 70%;
 	position: absolute;
 	bottom: 30px;
-	padding: 10px;
-}
-
-.reset-button:hover {
-	opacity: 100%;
-	cursor: pointer;
+	font-size: .5em;
 }
 
 #main-menu-button{
@@ -321,32 +363,6 @@ h1 {
 
 #try-again-button {
 	left: 20%;
-}
-
-#progress-box-outer {
-  border-radius: 25px;
-  background-color: white;
-  width: 800px;
-  height: 50px;
-  text-align: center;
-  position: absolute;
-  bottom: 10px;
-  left: 300px;
-  font-family: sans-serif;
-  line-height: 50px;
-  font-size: ;
-  font-weight: bold;
-  color: green;
-}
-
-#progress-box-inner {
-  background-color: lightgreen;
-  border-radius: inherit;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 60%;
 }
 
 .game-button {
@@ -358,6 +374,7 @@ h1 {
 	background-color: orange;
 	color: white;
 	border: none;
+	font-size: .7em;
 }
 
 .game-button:hover {
@@ -371,7 +388,7 @@ h1 {
 	width: 100%;
 	height: 120px;
 	position: absolute;
-	bottom: 0px;
+	bottom: 0;
 	background-color: red;
 	color: white;
 	font-size: 40px;
@@ -382,8 +399,8 @@ h1 {
 .screen {
 	background-color: lightgreen;
 	position: absolute;
-	top: 0px;
-	left: 0px;
+	top: 0;
+	left: 0;
 	width: 100%;
 	height: 100vh;
 	z-index: 120;
@@ -394,33 +411,204 @@ h1 {
 
 /* desktop screen */
 @media only screen and (min-width: 800px)  {   
-	.word-div:hover {
-		background-color: lightblue;
-		cursor: pointer;
-	}
 
-	#answerbox {
-		height: 300px;
-	}
+
+
 
 }
 
 /* mobile screen */
 @media only screen and (max-width: 800px) {
-	.word-div {						
-		height: 50px;
-		padding: 0px 10px;
-		border-radius: 10px;
-		font-size: 32px;
-		line-height: 50px;
+
+
+	#start-text {
+		margin-top: 15px;
+	}
+
+	#settings-area {
+		display: block;
 	}
 
 	.settings-box {
 		font-size: 14px;
+		display: block;
+		margin-top: 10px;
 	}
 
-	
+	.row {
+		margin: 5px 0;
+	}
+
+	#quickstart-button {
+		display: none;
+	}
+
+	.launcher-button {
+		width: 40vw;
+		font-size: .5em;
+		margin-bottom: 20px;
+	}
+
+	#start-icon {
+		margin-top: 15px;
+	}
+
+	#start-button {
+		padding-top: 15px;
+		font-size: .6em;
+	}
+
+	#save-button{
+		width: 40vw;
+	}
+
+	#paste-div, #paste-input {
+		width: 100%;
+	}
+
+	#popup-explanation {
+		display: none;
+	}
+
+	#birdpic-mobile {
+		display: inline-block;
+	}
+	#birdpic-desktop {
+		display: none;
+	}
+	#subtitle {
+		width: 300px;
+	}
+
+	#challenges-container {
+		text-align: center;
+		margin-bottom: 20px;
+	}
+
+	.challenge {
+		width: 38vw;
+		height: 90px;
+		border: none;
+		padding: 10px 5px;
+		margin: 5px;
+	}
+
+	.word-div {
+		height: 40px;
+		padding: 0 5px;
+		border-radius: 30px;
+		font-size: 24px;
+		line-height: 40px;
+	}
+
+	.small-word-div {
+		height: 35px;
+		padding: 0 5px;
+		border-radius: 30px;
+		font-size: 16px;
+		line-height: 35px;	
+	}
+
+	#answersentence {
+		margin: 10px auto;
+		text-align: left;
+	}
+
+	#message {
+		color: red;
+		background-color: #fcf403;
+		height: 80px;
+		line-height: 80px;
+		font-size: 40px;
+		width: 200px;
+		border: solid red 3px;
+		border-radius: 50%;
+	}
+
+	#undo-container {
+		padding: 0;
+		height: 60px;
+	}
+
+	.game-button {
+		height: 50px;
+		width: 100px;
+		line-height: 50px;
+		padding: 5px;
+	}
+
+
+
+
+#status-bar {
+	height: 50px;
+	padding: 0 0;
+	width: 100%;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	display: none;
+	background-color: #3291a8;
+	text-align: center;
+  	display: inline-block;
+  	margin: 0 0;
+}
+
+.small-box {
+	height: 25px;
+	padding: 0 0;
+	border-radius: 25px;
+	background-color: white;
+	font-size: 14px;
+	line-height: 25px;
+}
+
+#score-box, #timer, #quit-button {
+	display: inline-block;
+	margin: 0 0;
+	vertical-align: top;
+	min-width: 110px;
+	font-weight: bold;
+}
+
+#quit-button {
+	background-color: orange;
+	color: white;
+}
+#quit-button:hover {
+	background-color: white;
+	color: orange;
+	cursor: pointer;
+}
+
+#progress-box-outer {
+  border-radius: 25px;
+  background-color: white;
+  width: 100vw;
+  height: 25px;
+  text-align: center;
+  font-family: sans-serif;
+  line-height: 25px;
+  font-size: 16px;
+  font-weight: bold;
+  color: green;
+  position: relative;
+  display: block;
+  vertical-align: top;
+  margin: 0 0;
+}
+
+#progress-box-inner {
+  background-color: lightgreen;
+  border-radius: inherit;
+  height: inherit;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 60%;
+  display: inline-block;
+  margin: 0 0;
 }
 
 
-
+}

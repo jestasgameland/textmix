@@ -33,7 +33,10 @@
 
 		<div id="settings-area">
 
+			
+
 			<div class="settings-box" id="difficulty-settings">
+				<div id='birdpic-mobile'></div>
 				<h3>Chunk size:</h3>
 				<input type="radio" id="radio-easy" name="difficulty" value="6">  
 				<label for="radio-easy">6 words (Easiest)</label><br>
@@ -93,7 +96,7 @@
 
 			</div>
 
-			<div class="settings-box popup-settings" id='language-settings'>
+			<div class="settings-box" id='language-settings'>
 				<h3>Language:</h3>
 				<input type="radio" id="radio-simple-english" name="language" value="simple" checked="checked" >
 				<label for="radio-simple-english">Simple English</label><br>
@@ -104,28 +107,28 @@
 				<h3>Search term:</h3>
 				<input type="text" id="search-term" placeholder="(tea, Barack Obama, France...)">
 
-				<div id='birdpic'></div>
+				<div id='birdpic-desktop'></div>
 			</div>
 
 		</div>
 
 		
 		<div class="row">
-			<div class="settings-box popup-settings" id='paste-div'>
+			<div class="settings-box" id='paste-div'>
 				<h3>Paste text here:</h3>
 				<textarea id="paste-input"  name="paste-input" placeholder="Paste some text!  About a paragraph or so is good.  A whole article is good for a challenge!" required></textarea>
 			</div>
 		</div>
 
 		<div class="row">
-			<div class="settings-box popup-settings" id='challenges-container'>
+			<div class="settings-box" id='challenges-container'>
 				<h3>Challenges:</h3>
 			</div>
 		</div>
 		
 		<div class="row">
 			<div id='start-button' class="launcher-button">
-				START <br><img src='images/start.png' style='height: 35px'>
+				START <br><img src='images/start.png' id='start-icon' style='height: 35px'>
 			</div>
 			<div id="quickstart-button" class="launcher-button">
 				QUICK START <br><img src='images/quickstart.png' style='height: 35px'>
@@ -153,23 +156,32 @@
 	</div>
 
 	<div id='word-div-container'>
-		<div id='skip-button' class='small-box game-button'> Next! </div>
+		<div id='skip-button' class='game-button'> Next! </div>
 	</div>
 
 	<div id='undo-container'>
-		<div id='undo-button' class='small-box game-button'> Undo </div>
+		<div id='undo-button' class='game-button'> Undo </div>
 	</div>
 
-	<div id='score-box' class='small-box'>   Score: 0      </div>
-	<div id='timer' class='small-box'>       Time: 0       </div>
-	<div id='quit-button' class='small-box'> Quit        </div>
+
+
+	<div id='status-bar'>
+			
+			<div id='progress-box-outer'>          Progress: 0%  <div id='progress-box-inner'></div></div>
+			<div id='score-box' class='small-box'>   Score: 0      </div>
+			<div id='timer' class='small-box'>       Time: 0       </div>
+			<div id='quit-button' class='small-box'> Quit        </div>
+			
+	</div>
+
+
+
 	<div id='game-over'>                     GAME OVER     <br>
-		<div class='small-box reset-button' id='try-again-button'> 	Try Again     </div>  
-		<div class='small-box reset-button' id='main-menu-button'>	Main Menu     </div> 
+		<div class='game-button reset-button' id='try-again-button'> 	Try Again     </div>  
+		<div class='game-button reset-button' id='main-menu-button'>	Main Menu     </div> 
 	</div>
-	<div id='progress-box-outer'>          Progress: 0%  <div id='progress-box-inner'></div></div>
 	
-
+	
 
 	<script src="wikipedia_fetcher.js"></script>
 	<script src="shuffle.js"></script>
@@ -185,9 +197,16 @@
 				opacity = '100%';
 				clickable = "auto";
 				getSettings();
+
+				if (window.innerWidth < 800) {
+					document.getElementById('language-settings').style.display = "block"; 
+				}
 			} else {
 				opacity = '50%';
 				clickable = "none";
+				if (window.innerWidth < 800) {
+					document.getElementById('language-settings').style.display = "none"; //hide it completely if mobile
+				}
 			};
 			document.getElementById('language-settings').style.opacity = opacity;
 			document.getElementById('language-settings').style.pointerEvents = clickable;
@@ -211,9 +230,15 @@
 				display = 'block';
 				getSettings();
 				loadPresetTexts();
-				//dataSource = "preset text"
+				document.getElementById('start-button').style.display = "none";
+				document.getElementById('quickstart-button').style.display = "none";
+				document.getElementById('save-button').style.display = "none";
 			} else {
 				display = 'none';
+				loadPresetTexts();
+				document.getElementById('start-button').style.display = "inline-block";
+				document.getElementById('quickstart-button').style.display = "inline-block";
+				document.getElementById('save-button').style.display = "inline-block";
 			};
 			document.getElementById('challenges-container').style.display = display;
 		}
@@ -277,6 +302,7 @@
 		var undoButton = document.getElementById("undo-button");
 		var skipButton = document.getElementById("skip-button");
 		var quitButton = document.getElementById("quit-button");
+		var statusBar = document.getElementById("status-bar");
 
 			undoButton.addEventListener("click", undo);
 			skipButton.addEventListener("click", ready);
@@ -284,9 +310,11 @@
 
 		//	document.getElementById("undo-button").style.display = "none";  //avoid appearing on game over screen
 			document.getElementById("skip-button").style.display = "none";  
+			statusBar.style.display = "none";
 
 
 		loadTxtFile("100commonwords.txt");  //load the grammarList
+
 
 		//set up start buttons:
 
@@ -490,10 +518,12 @@
 				if (needToLoadText == "yes") {  //if ready() and getText() have already been run via  make_text_file.js
 					makeLoadScreen()
 				} 
-				else {  //neet to load text via getText() below
-					$("#start-screen").animate({left: windowWidth}, 500);  //push it from the left over 500ms
+				else {  //need to get text via getText() below
+					$("#start-screen").fadeOut(500, function () {
+						document.getElementById("start-screen").style.display = "none";
+					});
 					setInterval(incrementTime, 100);
-					progressBoxOuter.style.display = "block";
+					statusBar.style.display = "inline-block";
 					getText();
 				}		
 		}
@@ -737,6 +767,15 @@
 			undoCount = 0;
 			clickedDivs = [];
 
+			//shrink for mobile
+			if(windowWidth<800 && jumbledSentence.length > 4) {  //for mobile, make smaller if many word makeDivs
+				answerBox.style.fontSize = "26px"; 
+			} else {
+				answerBox.style.fontSize = "32px"; 
+			};
+
+			
+
 			if (imageVisible) {
 				answerBox.removeChild(imageContainer);
 				imageVisible = false;
@@ -772,8 +811,8 @@
 
 				var wordChunk = jumbledSentence[i];  //if cloze mode, then jumbledSentence is actually word bank to fill in blanks.  Instead of making divs from the words IN the sentence, only use the words REMOVED from the sentence (Articles, prepositions, etc.)
 
-				if(wordChunk.length > 7) {  //if many words in each div, make font smaller
-					div.setAttribute('class','word-div small-text');   
+				if(windowWidth<800 && jumbledSentence.length > 4) {  //for mobile, make smaller if many word makeDivs
+					div.setAttribute('class','word-div small-word-div');  
 				} else {
 					div.setAttribute('class', 'word-div');
 				};
@@ -817,7 +856,11 @@
 			}
 
 			// do these things no matter which learning mode:
-			$(this).css('visibility', 'hidden');
+			if (windowWidth<800 && jumbledSentence.length>7) {  //on mobile, make words reposition to fit after disappearing
+				$(this).css('display', 'none');
+			} else {
+				$(this).css('visibility', 'hidden');
+			}
 			
 
 			wordsEntered ++;
@@ -879,7 +922,7 @@
 
 		function gameOver() {
 			undoButton.style.display = "none";
-			progressBoxOuter.style.display = "none";
+			statusBar.style.display = "none";
 			answerBox.style.backgroundColor = 'red';
 			answerSentence.style.backgroundColor = 'red';
 			answerSentence.style.color = 'white';
@@ -922,7 +965,8 @@
 			answerSentence.style.color = '#4286f4';
 
 			progressBoxOuter.innerHTML = "Progress: 0% <div id='progress-box-inner'></div>";
-			document.getElementById('progress-box-inner').style.width = 0;
+			progressBoxInner.style.width = 0;
+			statusBar.style.display = "none";
 		    document.getElementById('answersentence').innerHTML = '';
 		    skipButton.style.display = "none";
 		    undoButton.style.display = "inline-block";
@@ -951,7 +995,7 @@
 			
 			document.getElementById('paste-input').value = "";
 			document.getElementById('search-term').value = "";  
-			document.getElementById('start-screen').style.left = "0px";
+			document.getElementById('start-screen').style.display = "block";
 		}
 
 
@@ -987,6 +1031,7 @@
 			victoryImageContainer.appendChild(victoryImageDiv);
 
 			winScreen.appendChild(victoryImageContainer);
+
 		}
      
 
@@ -1034,15 +1079,13 @@
 		}
 
 		function displayCharacter() {
-			var imageFile = "images/playing" + Math.floor(Math.random()*7+1) +".gif";
+			var imageFile = "images/playing" + Math.floor(Math.random()*6+1) +".gif";
 			imageDiv = document.createElement("div");
 			imageContainer = document.createElement("div");
-			var yeah = document.createElement("div");
+			var message = document.createElement("div");
 
-			yeah.innerHTML = "GREAT!";
-			//yeah.style.color = "#0aff4b";
-			//yeah.style.backgroundColor = "#fcf403";
-			yeah.id = "yeah";
+			message.innerHTML = "GREAT!";
+			message.id = "message";
 
 			imageContainer.className = "image-container float-right";
 			
@@ -1053,9 +1096,16 @@
 			imageDiv.style.backgroundRepeat = "no-repeat";
 
 			imageContainer.appendChild(imageDiv);
-			imageContainer.appendChild(yeah);
+			imageContainer.appendChild(message);
 
 			answerBox.appendChild(imageContainer);
+
+			if (windowWidth>800) {  //desktop
+				$(imageContainer).animate({left: '1000px'}, 300);
+			}
+			else { //mobile
+				$(imageContainer).animate({left: '100px'}, 300);
+			}
 
 			imageVisible = true;
 		}
