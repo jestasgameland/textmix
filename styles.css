@@ -9,6 +9,18 @@ html, body {
 	background-color: #69c4db;
 }
 
+#preloadedImages {
+    width: 0px;
+    height: 0px;
+    display: inline;
+    background-image: url(images/playing1.gif);
+    background-image: url(images/playing2.gif);
+    background-image: url(images/playing3.gif);
+    background-image: url(images/playing4.gif);
+    background-image: url(images/playing5.gif);
+    background-image: url(images/playing6.gif);
+}
+
 h1, h2, h3, h4 {
 	font-family: 'Montserrat', sans-serif;
 	line-height: 0;
@@ -199,6 +211,7 @@ h1 {
 #answersentence {				
 	display: inline-block;
 	margin: 100px auto;
+	padding: 10px;
 }
 
 #previous-sentences-div {
@@ -397,7 +410,7 @@ h1 {
 }
 
 .screen {
-	background-color: lightgreen;
+	background-color: #69c4db;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -512,6 +525,7 @@ h1 {
 	#answersentence {
 		margin: 10px auto;
 		text-align: left;
+		padding: 3px;
 	}
 
 	#message {
@@ -530,12 +544,40 @@ h1 {
 		height: 60px;
 	}
 
+	#undo-button, #skip-button {
+		position: static;
+		margin-top: 5px;
+		display: inline-block;
+	}
+
 	.game-button {
-		height: 50px;
+		height: 30px;
 		width: 100px;
-		line-height: 50px;
+		line-height: 30px;
 		padding: 5px;
 	}
+
+	.victory-image-container{
+		position: absolute;
+		top: 75px;
+		left: 0px;
+		z-index: 1;
+		text-align: center;
+	}
+
+	.victory-image-div {
+		height: 200px;
+		width: 200px;
+		display: inline-block;
+		margin: 0 auto;
+
+	}
+
+	h1, h2, br {
+		line-height: 0;
+	}
+
+
 
 
 

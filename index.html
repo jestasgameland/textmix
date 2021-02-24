@@ -14,6 +14,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
 
+
 	<!--for featured image on linkedin:  -->
 	<meta name="description" content="TextMix - Created by Brendon Albertson" />
 	<meta name="title" property="og:title" content="TextMix - Created by Brendon Albertson" />
@@ -146,7 +147,7 @@
 	<!-- ABOVE HTML IS FOR START SCREEN -->
 	<!-- BELOW HTML IS FOR GAME -->
 
-	<div id="hidden-text-div" style="visibility: hidden"></div>  
+	<div id="hidden-text-div" style="display: none"></div>  
 	<!--This is where the Wikipedia search result text goes (can't find a way to put it in a variable since it's Ajax onreadystatechange)-->
 
 
@@ -189,6 +190,11 @@
 	<script src="get_data.js"></script>
 	<script>
 
+		var mobile = false;
+		if (window.innerWidth<800) {
+			mobile = true;
+		}
+
 		//display or hide the language setting for wikipedia and the box to paste text if these settings are selected:
 		function languagePopup(yes) {
 			var opacity;
@@ -198,13 +204,13 @@
 				clickable = "auto";
 				getSettings();
 
-				if (window.innerWidth < 800) {
+				if (mobile) {
 					document.getElementById('language-settings').style.display = "block"; 
 				}
 			} else {
 				opacity = '50%';
 				clickable = "none";
-				if (window.innerWidth < 800) {
+				if (mobile) {
 					document.getElementById('language-settings').style.display = "none"; //hide it completely if mobile
 				}
 			};
@@ -250,7 +256,8 @@
 		var listOfSentences = [];
 		var rand;
 		var rainbowMode = false;
-		var sentenceWords = [];
+		var wordsArray = [];
+		var wordChunksArray = [];
 		var jumbledSentence = [];
 		var sentenceString = '';
 		var answerBox = document.getElementById('answerbox');
@@ -287,7 +294,6 @@
 		var finishedSentences = 0;
 		var needToCheckRadios = true;
 		var loadedPresetTexts = false; //not loaded yet
-	//	var textFile;  
 		var winScreen;
 		var youWon;
 		var tryAgain;
@@ -589,6 +595,8 @@
 				listOfSentences = document.getElementById("hidden-text-div").textContent.split(separator);
 			};
 
+			//if source is not wikipedia, listOfSentences was already set by getText()
+
 			if(randomMode) {
 				rand = Math.floor(Math.random() * listOfSentences.length);
 				sentenceString = listOfSentences[rand];
@@ -596,35 +604,37 @@
 				sentenceString = listOfSentences[count];
 
 			};
-			cleanSentence(sentenceString) ;
+			cleanSentence(sentenceString);
 			return sentenceString;
 		}
 
 		function makeClozeSentence() {
 			foundArticle = false;
-			sentenceWords[sentenceWords.length-1] += '.';  //add period to last word
+			wordChunksArray[wordChunksArray.length-1] += '.';  //add period to last word
 
 			if (count < listOfSentences.length-2) {  //as long as there are still 2 sentences left to get
 				count++;  //get 2 sentences instead of 1 (better for articles, prepositions, etc)
 				finishedSentences++;
-				sentenceWords = sentenceWords.concat(getOneSentence().split(' '));
-				sentenceWords[sentenceWords.length-1] += '.';
+				wordChunksArray = wordChunksArray.concat(getOneSentence().split(' '));
+				wordChunksArray[wordChunksArray.length-1] += '.';
 			};
 		
 			clozeSentence = [];  //reset it after completing a sentence
 			clozeWords = [];
 
-			for (i=0; i<sentenceWords.length; i++) {
+			for (i=0; i<wordChunksArray.length; i++) {
 
-				if (learningMode=='articles' && articleList.includes(sentenceWords[i]) || learningMode=='prepositions' && prepList.includes(sentenceWords[i]) || learningMode=='grammar' && grammarList.includes(sentenceWords[i])) {  //if the word is an article/preposition
-					clozeWords.push(sentenceWords[i]); //these will be the word divs to click
+				if (learningMode=='articles' && articleList.includes(wordChunksArray[i]) || learningMode=='prepositions' && prepList.includes(wordChunksArray[i]) || learningMode=='grammar' && grammarList.includes(wordChunksArray[i])) {  //if the word is an article/preposition
+					clozeWords.push(wordChunksArray[i]); //these will be the word divs to click
 					clozeSentence.push("_____"); //add a blank to the new clozeSentence array
 					//this will be the sentence with blanks, added to the answerbox later
 					foundArticle = true;
 				} else{  //if not an article
-					clozeSentence.push(sentenceWords[i]) //add the word to the new clozeSentence array
+					clozeSentence.push(wordChunksArray[i]) //add the word to the new clozeSentence array
 				}
 			}
+
+
 
 			jumbledSentence = shuffle(clozeWords);
 		}
@@ -632,15 +642,18 @@
 		function prepareSentence() {  //what to do with the sentence once it done been got!
 
 			try{
-				sentenceWords = getOneSentence().split(' ');
+				wordChunksArray = getOneSentence().split(' ');
 			} catch{};
+
+			wordsArray = wordChunksArray;  //get the list of words before they're chunked, for setting font size on mobile later
 
 			if (learningMode!= 'jumble') { makeClozeSentence() }  //if cloze mode
 
 			else {  //if normal word jumble (jumble) learning mode
-				console.log('Run as normal word jumble, no need to do anything');   
-				sentenceWords = chunkArray(sentenceWords, wordGroupSize);  // Split up into word groups/chunks.  This is an array of arrays (chunks of words) in CORRECT ORDER.  Each array has a number of words equal to wordGroupSize.
-				jumbledSentence = shuffle(sentenceWords);   //mix up the arrays within the array
+				console.log('Run as normal word jumble, no need to make cloze sentence.');  
+
+				wordChunksArray = chunkArray(wordChunksArray, wordGroupSize);  // Split up into word groups/chunks.  This is an array of arrays (chunks of words) in CORRECT ORDER.  Each array has a number of words equal to wordGroupSize.
+				jumbledSentence = shuffle(wordChunksArray);   //mix up the arrays within the array
 			}
 		};
 
@@ -764,17 +777,21 @@
 			answerBox.style.backgroundColor = 'white';
 			answerSentence.style.color = '#4286f4';
 			undoHistory = [];
+			if(wordChunksArray.length>1) {  //no need for undo button if only one word-div to click
+				undoButton.style.display = "inline-block";
+			}
 			undoCount = 0;
 			clickedDivs = [];
 
-			//shrink for mobile
-			if(windowWidth<800 && jumbledSentence.length > 4) {  //for mobile, make smaller if many word makeDivs
+			//for mobile, make font smaller if many words
+			if(mobile && wordsArray.length > 20) {  
 				answerBox.style.fontSize = "26px"; 
+			} else if(mobile && wordsArray.length > 30) {
+				answerBox.style.fontSize = "20px"; 
 			} else {
 				answerBox.style.fontSize = "32px"; 
 			};
 
-			
 
 			if (imageVisible) {
 				answerBox.removeChild(imageContainer);
@@ -811,7 +828,7 @@
 
 				var wordChunk = jumbledSentence[i];  //if cloze mode, then jumbledSentence is actually word bank to fill in blanks.  Instead of making divs from the words IN the sentence, only use the words REMOVED from the sentence (Articles, prepositions, etc.)
 
-				if(windowWidth<800 && jumbledSentence.length > 4) {  //for mobile, make smaller if many word makeDivs
+				if(mobile && jumbledSentence.length > 4) {  //for mobile, make smaller if many word makeDivs
 					div.setAttribute('class','word-div small-word-div');  
 				} else {
 					div.setAttribute('class', 'word-div');
@@ -856,7 +873,7 @@
 			}
 
 			// do these things no matter which learning mode:
-			if (windowWidth<800 && jumbledSentence.length>7) {  //on mobile, make words reposition to fit after disappearing
+			if (mobile && jumbledSentence.length>7) {  //on mobile, make words reposition to fit after disappearing
 				$(this).css('display', 'none');
 			} else {
 				$(this).css('visibility', 'hidden');
@@ -876,13 +893,14 @@
 				answer = answerSentence.textContent;  //must use innerText, not innerHTML because &nbsp characters sometimes come up in wikipedia - innerText just renders them as normal spaces
 
 				// IF CORRECT   (cloze modes do not add an extra space at the end)
-				if(answer == sentenceString + ' ' || answer == sentenceWords.join(" ") && learningMode!='jumble' || skip==true) {  //if you're skipping this last sentence, automatically win, don't even check for correctness
+				if(answer == sentenceString + ' ' || answer == wordChunksArray.join(" ") && learningMode!='jumble' || skip==true) {  //if you're skipping this last sentence, automatically win, don't even check for correctness
 
-				//below line not needed, it seems?  
-				//	answerSentence.innerHTML = answer.substr(answer[0],answer.length-1) + '.'; //add period to the end
+					if (!skip) {
+						answerSentence.innerHTML = answer.substr(answer[0],answer.length-1) + '.'; //add period to the end.  Skip will have already added one.
+					}
 
 					//Inrease score:
-					score += sentenceWords.length * time;
+					score += wordChunksArray.length * time;
 					finishedSentences ++;
 					document.getElementById('score-box').innerHTML = "Score: " + score;	
 					
@@ -890,7 +908,7 @@
 					var totalSentences = listOfSentences.length;
 					progress = Math.floor(100*(finishedSentences / totalSentences));
 					document.getElementById('progress-box-outer').innerHTML = "Progress: " + progress + "% <div id='progress-box-inner'></div>";
-					var width = 800;
+					var width = document.getElementById('progress-box-outer').offsetWidth;
 					document.getElementById('progress-box-inner').style.width = (progress/100)*width + "px";
 
 					if (progress == 100) {   // all sentences are finished - YOU WIN!
@@ -929,7 +947,7 @@
 
 			//display the correct answer:
 			if (learningMode !='jumble') {
-				answerSentence.innerHTML = sentenceWords.join(" ");
+				answerSentence.innerHTML = wordChunksArray.join(" ");
 			} else {
 			answerSentence.innerHTML = sentenceString;
 			}
@@ -1010,7 +1028,9 @@
 		function win() {
 			youWon = true;
 
-			var victoryImageFile = "images/victory" + Math.floor(Math.random()*6+1) +".gif";
+			statusBar.style.display = "none";
+
+			var victoryImageFile = "images/victory" + Math.floor(Math.random()*5+1) +".gif";
 			var victoryImageDiv = document.createElement("div");
 			
 			victoryImageDiv.className = "victory-image-div";
@@ -1019,17 +1039,15 @@
 			victoryImageDiv.style.backgroundSize = "contain";
 			victoryImageDiv.style.backgroundRepeat = "no-repeat";
 
-			var winScreenHtml = "<img src='images/congrats.png' height=200px/><br><br><br><h2>You completed</h2><br><h1>" + listOfSentences.length + "</h1><br><h3>sentences.</h3><br>"
+			var winScreenHtml = "<img src='images/congrats.png' height=200px/><br><br><br><h2>You completed</h2><br><h1>" + listOfSentences.length + "</h1><br><h3>sentences.</h3><br>";
 			winScreen = createScreen(winScreenHtml);
+			winScreen.className = "screen win-screen";
 			winScreen.addEventListener("click", resetApp);
 			document.body.appendChild(winScreen);
 
 			var victoryImageContainer = document.createElement("div");
 			victoryImageContainer.className = "victory-image-container";
-			
-
 			victoryImageContainer.appendChild(victoryImageDiv);
-
 			winScreen.appendChild(victoryImageContainer);
 
 		}
@@ -1100,7 +1118,7 @@
 
 			answerBox.appendChild(imageContainer);
 
-			if (windowWidth>800) {  //desktop
+			if (!mobile) {  //desktop
 				$(imageContainer).animate({left: '1000px'}, 300);
 			}
 			else { //mobile
