@@ -36,19 +36,35 @@
 
 			
 
-			<div class="settings-box" id="difficulty-settings">
+			<div class="settings-box" id="wordchunk-settings">
 				<div id='birdpic-mobile'></div>
-				<h3>Chunk size:</h3>
-				<input type="radio" id="radio-easy" name="difficulty" value="6">  
-				<label for="radio-easy">6 words (Easiest)</label><br>
-				<input type="radio" id="radio-normal" name="difficulty" value="4" checked="checked">
-				<label for="radio-normal">5 words</label><br>
-				<input type="radio" id="radio-hard" name="difficulty" value="3">
-				<label for="radio-hard">4 words</label><br>
-				<input type="radio" id="radio-expert" name="difficulty" value="2">
-				<label for="radio-expert">2 words</label><br>
-				<input type="radio" id="radio-crazy" name="difficulty" value="1">
-				<label for="radio-crazy">1 word (Hardest)</label><br>
+				<h3>Chunk size</h3>
+				<input type="radio" id="radio-6" name="wordchunk-size" value="6">  
+				<label for="radio-6">6 words (Easiest)</label><br>
+				<input type="radio" id="radio-5" name="wordchunk-size" value="4" checked="checked">
+				<label for="radio-5">5 words</label><br>
+				<input type="radio" id="radio-4" name="wordchunk-size" value="3">
+				<label for="radio-4">4 words</label><br>
+				<input type="radio" id="radio-2" name="wordchunk-size" value="2">
+				<label for="radio-2">2 words</label><br>
+				<input type="radio" id="radio-1" name="wordchunk-size" value="1">
+				<label for="radio-1">1 word (Hardest)</label><br>
+			</div>
+
+
+
+			<div class="settings-box" id="studentmode-level-settings">
+				<h3>Level</h3>
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-beg" name="studentmode-level" value="5">  
+				<label for="radio-studentmode-beg">Beginner</label><br>
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-hibeg" name="studentmode-level" value="4" checked="checked">
+				<label for="radio-studentmode-hibeg">High Beginner</label><br>
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-int" name="studentmode-level" value="3">
+				<label for="radio-studentmode-int">Intermediate</label><br>
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-hiint" name="studentmode-level" value="2">
+				<label for="radio-studentmode-hiint">High Intermediate</label><br>
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-adv" name="studentmode-level" value="1">
+				<label for="radio-studentmode-adv">Advanced</label><br>
 			</div>
 
 			
@@ -60,6 +76,9 @@
 				<label for="radio-randomize-yes">Random Sentences</label><br>
 				<input type="radio" id="radio-randomize-reading" name="randomize" value="reading-mode" >
 				<label for="radio-randomize-reading">Reading Mode</label><br>
+				<br>
+				<input type="checkbox" id="timer-checkbox" name="timer" value="timerOn" checked="checked">
+				<label for="timer-checkbox">Timer</label>
 			</div>
 
 			<div class="settings-box" id='learning-mode-settings'>
@@ -78,13 +97,13 @@
 
 
 			<div class="settings-box" id='text-source-settings'>
-				<h3>Text source:</h3>
+				<h3>Text source</h3>
 
 				<input onclick="languagePopup(true); pastePopup(false); challengesPopup(false)" type="radio" id="radio-wikipedia" name="datasource" value="wikipedia" checked="checked">
 				<label for="radio-wikipedia">Wikipedia</label><br>
 
 
-				<input onclick="languagePopup(false); pastePopup(false); challengesPopup(true)" type="radio" id="radio-textfile" name="datasource" value="preset text">
+				<input onclick="languagePopup(false); pastePopup(false); challengesPopup(true, 'data.json')" type="radio" id="radio-textfile" name="datasource" value="preset text">
 				<label for="radio-textfile">Preset Challenges</label><br>
 
 
@@ -98,14 +117,14 @@
 			</div>
 
 			<div class="settings-box" id='language-settings'>
-				<h3>Language:</h3>
+				<h3>Language</h3>
 				<input type="radio" id="radio-simple-english" name="language" value="simple" checked="checked" >
 				<label for="radio-simple-english">Simple English</label><br>
 				<input type="radio" id="radio-english" name="language" value="en">
 				<label for="radio-english">Normal English</label><br>
 				<input type="radio" id="radio-japanese" name="language" value="ja">
 				<label for="radio-japanese">Japanese</label><br>
-				<h3>Search term:</h3>
+				<h3>Search term</h3>
 				<input type="text" id="search-term" placeholder="(tea, Barack Obama, France...)">
 
 				<div id='birdpic-desktop'></div>
@@ -159,16 +178,15 @@
 	<div id='word-div-container'>
 		<div id='skip-button' class='game-button'> Next! </div>
 	</div>
-
+<!--
 	<div id='undo-container'>
 		<div id='undo-button' class='game-button'> Undo </div>
 	</div>
-
-
-
+-->
 	<div id='status-bar'>
 			
 			<div id='progress-box-outer'>          Progress: 0%  <div id='progress-box-inner'></div></div>
+			<div id='undo-button' class='small-box'> Undo        </div>
 			<div id='score-box' class='small-box'>   Score: 0      </div>
 			<div id='timer' class='small-box'>       Time: 0       </div>
 			<div id='quit-button' class='small-box'> Quit        </div>
@@ -187,7 +205,7 @@
 	<script src="wikipedia_fetcher.js"></script>
 	<script src="shuffle.js"></script>
 	<script src="chunk_array.js"></script>
-	<script src="get_data.js"></script>
+	<script src="read_write_data.js"></script>
 	<script>
 
 		var mobile = false;
@@ -230,18 +248,18 @@
 			
 		}
 
-		function challengesPopup(yes) {
+		function challengesPopup(yes, textFile) {
 			var display;
 			if (yes) {
 				display = 'block';
-				getSettings();
-				loadPresetTexts();
+				if (!studentMode) { getSettings() };  
+				loadPresetTexts(textFile);
 				document.getElementById('start-button').style.display = "none";
 				document.getElementById('quickstart-button').style.display = "none";
 				document.getElementById('save-button').style.display = "none";
 			} else {
 				display = 'none';
-				loadPresetTexts();
+				loadPresetTexts(textFile);
 				document.getElementById('start-button').style.display = "inline-block";
 				document.getElementById('quickstart-button').style.display = "inline-block";
 				document.getElementById('save-button').style.display = "inline-block";
@@ -249,8 +267,13 @@
 			document.getElementById('challenges-container').style.display = display;
 		}
 
+		function disappear(thing) {
+			thing.style.display = "none";
+		}
+
 
 		var time;
+		var timer = document.getElementById('timer');
 		var score = 0;
 		var count = 0;
 		var listOfSentences = [];
@@ -268,7 +291,7 @@
 		var undoHistory =[];
 		var indexOfBlank;
 		var wordsEntered = 0;   //number of words that have been clicked so far
-		var wordGroupSize = 5; 
+		var wordChunkSize = 5; 
 		var clozeSentence = [];
 		var clozeWords = [];
 		var randomMode = false;
@@ -293,7 +316,7 @@
 		var imageVisible = false;
 		var finishedSentences = 0;
 		var needToCheckRadios = true;
-		var loadedPresetTexts = false; //not loaded yet
+		var needToLoadPresetText = true; //not loaded yet
 		var winScreen;
 		var youWon;
 		var tryAgain;
@@ -302,9 +325,6 @@
 		var presetTexts = [];
 		var dataToWrite = ['test sentence 1', 'test sentence 2'];
 		var loadScreen;
-		const urlParams = new URLSearchParams(window.location.search); //gets everything after the ?
-		var needToLoadText = urlParams.get('loadsavedtext');
-		var saveCode = urlParams.get('saveCode');  //gets what comes after saveCode= in the url (null if there's not saveCode specified)
 		var undoButton = document.getElementById("undo-button");
 		var skipButton = document.getElementById("skip-button");
 		var quitButton = document.getElementById("quit-button");
@@ -314,12 +334,47 @@
 			skipButton.addEventListener("click", ready);
 			quitButton.addEventListener("click", resetApp);
 
-		//	document.getElementById("undo-button").style.display = "none";  //avoid appearing on game over screen
 			document.getElementById("skip-button").style.display = "none";  
 			statusBar.style.display = "none";
 
 
 		loadTxtFile("100commonwords.txt");  //load the grammarList
+
+
+		const urlParams = new URLSearchParams(window.location.search); //get everything after the ?
+		var needToLoadSaved = urlParams.get('loadsavedtext');
+		var saveCode = urlParams.get('saveCode');  //(null if there's no saveCode specified)
+
+		
+		var scraperMode = urlParams.get('scrapermode');
+		if (scraperMode == 'true') { //convert string to boolean
+			scraperMode = true;
+		} else {scraperMode = false;}
+		var level = urlParams.get('level');  //which level JSON file to save the scraped text in
+
+		var studentMode = urlParams.get('studentmode');
+		if (studentMode == 'true') { //convert string to boolean
+			studentMode = true;
+		} else {studentMode = false;}
+
+
+		//STUDENT MODE IS LIKE "CAMPAIGN MODE" - everything (except level and learning mode) is preset and ready to go 
+		if (studentMode) {
+			dataSource = "preset text";
+			challengesPopup(true, 'studentmode_texts/hi_beg.json');  //start with this set of challenges
+			document.getElementById('studentmode-level-settings').style.display = "inline-block";
+			disappear(document.getElementById('game-mode-settings'));
+			disappear(document.getElementById('wordchunk-settings'));
+			disappear(document.getElementById('text-source-settings'));
+			disappear(document.getElementById('language-settings'));
+			disappear(document.getElementById('start-button'));
+			disappear(document.getElementById('quickstart-button'));
+			disappear(document.getElementById('save-button'));
+
+		}
+		else {
+			document.getElementById('studentmode-level-settings').style.display = "none";
+		}
 
 
 		//set up start buttons:
@@ -348,45 +403,30 @@
 		createPopupExplanations(document.getElementById('quickstart-button'), "Start the game with a random text and default settings.");
 		createPopupExplanations(document.getElementById('save-button'), "Create a game with the above settings and get a unique URL to share with students.");
 
-		createPopupExplanations(document.getElementById('difficulty-settings'), "Choose how each sentence is split. '1' means a traditional word jumble where each word must be unscrambled.");
+		createPopupExplanations(document.getElementById('wordchunk-settings'), "Choose how each sentence is split. '1' means a traditional word jumble where each word must be unscrambled.");
 		createPopupExplanations(document.getElementById('game-mode-settings'), "Preset sentences randomly or in order.  In 'reading mode', completed sentences stay on the screen so you can ready the next sentence in context.");
 		createPopupExplanations(document.getElementById('learning-mode-settings'), "Choose what kind of practice the activity should provide.");
 		createPopupExplanations(document.getElementById('text-source-settings'), "Select the source of text. If 'Wikipedia', also select language and search term.");
 		createPopupExplanations(document.getElementById('language-settings'), "(For Wikipedia text) Choose the language and search term to get an article exerpt. Case sensitive - must capitalize proper nouns!");
 
 
-		
-
-// LOAD --------------------------
-
-		function loadText() {
-		//If loading from saved URL, ignore all the setup stuff below; just load the text and getData() will handle the rest
-			if(needToLoadText == 'yes') {
-				dataSource = "load";
-				needToCheckRadios = false;
-				//load up the text:
-				getData(saveCode, 'read one text', null, null, null); //this sets existingData.  saveCode tells which array in the array of arrays in the JSON file.  This array will be set as listOfSentences.
-				console.log("Loaded text from JSON file.");
-			} else{
-				console.log("Didn't load text; settings must be chosen.");
-			};
-		}
-
-		loadText();
-
-// LOAD --------------------------
-
 
 		//set up challenges
-		function loadPresetTexts() {
-			getData(null, 'get all texts', null, null, null);  //This will set up presetTexts array
+		function loadPresetTexts(jsonFileName) {
+			readOrWriteData(null, 'get all texts', null, null, null, jsonFileName);  //This will set up presetTexts array
 		}
 
-		function makePresetTextDivs() {  //This function gets run by getData after presetTexts have been loaded
+		function makePresetTextDivs() {  //This function gets run by readOrWriteData after presetTexts have been loaded
 
-			if (!loadedPresetTexts) {  // ifnot yet loaded
-			var challengesContainer = document.getElementById('challenges-container');
+			if (needToLoadPresetText) {  // ifnot yet loaded
+				var challengesContainer = document.getElementById('challenges-container');
 
+					//first clear the challenges-container:
+				    while (challengesContainer.firstChild) {
+       					challengesContainer.removeChild(challengesContainer.firstChild);
+   					}
+
+   				//	challengesContainer.innerHTML = '';
 
 					//make the preset text (challenge) divs:
 				for (i=0; i<presetTexts.length; i++) {
@@ -409,9 +449,28 @@
 				}
 			};
 
-			loadedPresetTexts = true;  //prevent it from loading again if this radio button is unclicked and then clicked again
+			if (!studentMode) {needToLoadPresetText = false;} //prevent it from loading again if this radio button is unclicked and then clicked again
 		}
 
+		
+
+// CHECK IF SAVECODE IS SPECIFIED --------------------------
+
+		function loadText() {
+		//If loading from saved URL, ignore all the setup stuff below; just load the text and readOrWriteData() will handle the rest
+			if(needToLoadSaved == 'yes') {
+				dataSource = "load";
+				needToCheckRadios = false;
+				//load up the text:
+				readOrWriteData(saveCode, 'read one text', null, null, null); //this sets existingData.  saveCode tells which array in the array of arrays in the JSON file.  This array will be set as listOfSentences.
+				console.log("Loaded text from JSON file.");
+			} else{
+				console.log("Didn't load text; settings must be chosen.");
+			};
+		}
+
+		loadText();
+// ----------------------------------------------------
 
 
 		//Set up the "save & share" option:
@@ -447,11 +506,20 @@
 
 			getSettings();
 
+			//figure out where to write the data:
+			var textFile;
+			if (!scraperMode) {textFile = data.json} //usual main JSON file
+			else {
+				textFile = 'studentmode_texts/' + level + '.json';  // beg.json, hi_beg.json, etc.
+			};
+
+
 			function writeWikiText() { //after wikiSearch is complete, run this as callback function.
 				var separator = ". ";
 				listOfSentences = document.getElementById("hidden-text-div").textContent.split(separator);
-				getData(saveCode, "write", randomMode, wordGroupSize, listOfSentences);
+				readOrWriteData(saveCode, "write", randomMode, wordChunkSize, listOfSentences, textFile);
 			}
+
 
 			if(dataSource == "wikipedia"){
 				searchTerm = document.getElementById('search-term').value;
@@ -460,7 +528,7 @@
 			else {
 				getText();  //run everything except getOneSentence() and makeDivs().  This will set up listOfSentences.
 				//finally, write the listOfSentences array to JSON file:  saveCode tells which array in the array of arrays in the JSON file.  This array will be set as listOfSentences.
-				getData(saveCode, "write", randomMode, wordGroupSize, listOfSentences);
+				readOrWriteData(saveCode, "write", randomMode, wordChunkSize, listOfSentences, textFile);
 			};
 
 			var backButtonContainer = document.createElement("div");
@@ -521,20 +589,45 @@
 					return;
 				}
 
-				if (needToLoadText == "yes") {  //if ready() and getText() have already been run via  make_text_file.js
+				if (needToLoadSaved == "yes") {  //if ready() and getText() have already been run via  make_text_file.js
 					makeLoadScreen()
 				} 
 				else {  //need to get text via getText() below
 					$("#start-screen").fadeOut(500, function () {
 						document.getElementById("start-screen").style.display = "none";
 					});
-					setInterval(incrementTime, 100);
+
+					if (timer.style.display != "none") {  //as long as the timer is turned on
+						setInterval(incrementTime, 100);
+					};
+
 					statusBar.style.display = "inline-block";
+
 					getText();
 				}		
 		}
 
-	
+		function getSettings() {
+			//check the radio button settings:
+			if(needToCheckRadios) {
+				if (studentMode) {
+					checkRadio('studentmode-level')
+					checkRadio('learning');
+				}
+				else {
+					checkRadio('randomize');
+					checkRadio('wordchunk-size');
+					checkRadio('datasource');
+					checkRadio('language');
+					checkRadio('learning');
+				}
+			};
+
+			if(document.getElementById("timer-checkbox").checked == false) {
+				timer.style.display = "none";
+			}
+		}
+
 		//set game settings based on radio buttons:
 		//set the corresponding setting variable
 		//this is 'DRY' CODING RIGHT HERE!!!
@@ -556,8 +649,30 @@
 							readingMode = true;
 						}
 					}	
-					else if (radioName == "difficulty") {
-						wordGroupSize = parseInt(choices[i].value); //radio btn values can only be strings
+					else if (radioName == "wordchunk-size") {
+						wordChunkSize = parseInt(choices[i].value); //radio btn values can only be strings
+					}
+					else if (radioName == "studentmode-level") {
+						randomMode = false;
+						wordChunkSize = parseInt(choices[i].value) + 1;
+						switch(parseInt(choices[i].value)) {
+							case 5:
+								challengesPopup(true, 'studentmode_texts/beg.json');
+							break;
+							case 4:
+								challengesPopup(true, 'studentmode_texts/hi_beg.json');
+							break;
+							case 3:
+								challengesPopup(true, 'studentmode_texts/int.json');
+							break;
+							case 2:
+								challengesPopup(true, 'studentmode_texts/hi_int.json');
+							break;
+							case 1:
+								challengesPopup(true, 'studentmode_texts/adv.json');
+							break;
+							default: alert("error");
+						}
 					}
 					else if (radioName == "datasource") {
 						dataSource = choices[i].value;
@@ -565,7 +680,7 @@
 					else if (radioName == "learning") {
 						learningMode = choices[i].value;
 						if (choices[i].value != 'jumble') {
-							wordGroupSize = 1; //if articles or prepositions, set the word group size to 1
+							wordChunkSize = 1; //if articles or prepositions, set the word group size to 1
 						}
 
 					}
@@ -589,7 +704,7 @@
 
 		function getOneSentence() {
 
-			if(dataSource == "wikipedia" && needToLoadText != "yes"){  //a.k.a. if we still need to send a request to wikipedia API
+			if(dataSource == "wikipedia" && needToLoadSaved != "yes"){  //a.k.a. if we still need to send a request to wikipedia API
 				var separator = ". ";
 				//hidden-text-div is where wikiSearch put the text
 				listOfSentences = document.getElementById("hidden-text-div").textContent.split(separator);
@@ -652,7 +767,7 @@
 			else {  //if normal word jumble (jumble) learning mode
 				console.log('Run as normal word jumble, no need to make cloze sentence.');  
 
-				wordChunksArray = chunkArray(wordChunksArray, wordGroupSize);  // Split up into word groups/chunks.  This is an array of arrays (chunks of words) in CORRECT ORDER.  Each array has a number of words equal to wordGroupSize.
+				wordChunksArray = chunkArray(wordChunksArray, wordChunkSize);  // Split up into word groups/chunks.  This is an array of arrays (chunks of words) in CORRECT ORDER.  Each array has a number of words equal to wordChunkSize.
 				jumbledSentence = shuffle(wordChunksArray);   //mix up the arrays within the array
 			}
 		};
@@ -674,16 +789,6 @@
 			makeDivs();
 		}
 
-		function getSettings() {
-			//check the radio button settings:
-			if(needToCheckRadios) {
-				checkRadio('randomize');
-				checkRadio('difficulty');
-				checkRadio('datasource');
-				checkRadio('language');
-				checkRadio('learning');
-			};
-		}
 
 
 		function loadTxtFile(filename) {
@@ -882,7 +987,7 @@
 
 			wordsEntered ++;
 
-			if(wordsEntered == i) {   //if all the words in the senetence have been entered
+			if(wordsEntered == jumbledSentence.length) {   //if all the words in the senetence have been entered
 				checkWin();
 			}
 		};
@@ -984,7 +1089,7 @@
 
 			progressBoxOuter.innerHTML = "Progress: 0% <div id='progress-box-inner'></div>";
 			progressBoxInner.style.width = 0;
-			statusBar.style.display = "none";
+			
 		    document.getElementById('answersentence').innerHTML = '';
 		    skipButton.style.display = "none";
 		    undoButton.style.display = "inline-block";
@@ -999,6 +1104,7 @@
 
 			if (tryAgain) {
 				tryAgain = false; //reset it
+				statusBar.style.display = "inline-block";
 				ready();
 				return; //don't do any of the below stuff
 			};
@@ -1014,6 +1120,8 @@
 			document.getElementById('paste-input').value = "";
 			document.getElementById('search-term').value = "";  
 			document.getElementById('start-screen').style.display = "block";
+			timer.style.display = "inline-block";
+			
 		}
 
 
@@ -1081,9 +1189,7 @@
 		}
 
 		function incrementTime() {
-
-			var timeDiv = document.getElementById('timer');
-
+			
 			if (time == 0) {
 				//stop decreasing time
 				//$("#game-over").css("visibility", "visible");
@@ -1092,7 +1198,7 @@
 
 			else {
 				time --;
-				timeDiv.innerHTML = "Time: " + time; 
+				timer.innerHTML = "Time: " + time; 
 			}
 		}
 

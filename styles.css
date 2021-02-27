@@ -250,7 +250,7 @@ h1 {
 }
 
 
-#undo-button, #skip-button {
+#skip-button {
 	position: static;
 	margin-top: 20px;
 	display: inline-block;
@@ -322,16 +322,16 @@ h1 {
 	color: #3291a8;
 }
 
-#score-box, #timer, #quit-button {
+#score-box, #timer, #quit-button, #undo-button {
 	display: inline-block;
 	margin: 5px 20px;
 }
 
-#quit-button {
+#quit-button, #undo-button {
 	background-color: orange;
 	color: white;
 }
-#quit-button:hover {
+#quit-button:hover, #undo-button:hover {
 	background-color: white;
 	color: orange;
 	cursor: pointer;
@@ -349,7 +349,8 @@ h1 {
   font-weight: bold;
   color: green;
   position: relative;
-  display: inline-block;
+  display: block;
+  margin: 0 auto;
 }
 
 #progress-box-inner {
@@ -362,6 +363,7 @@ h1 {
   opacity: 60%;
   display: inline-block;
 }
+
 
 .reset-button{
 	display: none;
@@ -544,7 +546,7 @@ h1 {
 		height: 60px;
 	}
 
-	#undo-button, #skip-button {
+	#skip-button {
 		position: static;
 		margin-top: 5px;
 		display: inline-block;
@@ -605,23 +607,14 @@ h1 {
 	line-height: 25px;
 }
 
-#score-box, #timer, #quit-button {
+#score-box, #timer, #quit-button, #undo-button {
 	display: inline-block;
 	margin: 0 0;
 	vertical-align: top;
-	min-width: 110px;
+	min-width: 70px;
 	font-weight: bold;
 }
 
-#quit-button {
-	background-color: orange;
-	color: white;
-}
-#quit-button:hover {
-	background-color: white;
-	color: orange;
-	cursor: pointer;
-}
 
 #progress-box-outer {
   border-radius: 25px;
