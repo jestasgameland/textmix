@@ -23,7 +23,11 @@ html, body {
 
 h1, h2, h3, h4 {
 	font-family: 'Montserrat', sans-serif;
-	line-height: 0;
+	line-height: normal;
+}
+
+h4 {
+	font-size: 26px;
 }
 
 h2 {
@@ -34,6 +38,25 @@ h1 {
 	font-size: 60px;
 }
 
+footer {
+	position: absolute;
+	bottom: 10px;
+	width: inherit;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+#back {
+	position: absolute;
+	font-weight: bold;
+	font-family: 'Montserrat', sans-serif;
+	display: none;
+}
+
+#back:hover {
+	cursor: pointer;
+	color: yellow;
+}
 
 
 #search-term {
@@ -41,12 +64,12 @@ h1 {
 	width: 90%;
 }
 
-#start-screen {
+#settings-screen, #start-screen {
 	width: 100%;
 	height: 100%;  /* 100% of viewport height */
 	background-color: #69c4db;
 	position: absolute;
-	z-index: 100;
+	z-index: 2;
 	font-family: 'Poiret One', sans-serif;
 	font-size: 50px;
 	color: white;
@@ -71,14 +94,15 @@ h1 {
 }
 
 
-#settings-area {
+.settings-area {
 	min-height: 200px;
 	width: 100%;
 	display: flex;
  	justify-content: center;
 }
 
-.settings-box {
+
+.settings-box, .startscreen-box {
 	padding: 10px;
 	font-family: 'Montserrat', sans-serif;
 	color: #2d607d;
@@ -91,7 +115,15 @@ h1 {
 	position: relative;
 }
 
+.startscreen-box {
+	text-align: center;
+	font-size: 40px;
+}
 
+.startscreen-box:hover {
+	background-color: lightgreen;
+	cursor: pointer;
+}
 
 #paste-div {
 	display: none;
@@ -106,7 +138,7 @@ h1 {
 	max-width: 150px;
 	height: 100px;
 	border: solid #69c4db 2px;
-	border-radius: 30px;
+	border-radius: 20px;
 	background-color: white;
 	display: inline-block;
 	padding: 10px;
@@ -161,12 +193,13 @@ h1 {
 
 #answerbox {
 	width: 100%;
-	height: 300px;
+	min-height: 300px;
 	background-color: white;
 	font-size: 32px;
 	color: #4286f4;
 	text-align: center;
 	position: relative;
+	z-index: 0;
 }
 
 #message {
@@ -230,6 +263,7 @@ h1 {
 	text-align: center;
 	background-color: #69c4db;
 	padding-top: 10px;
+	z-index: 0;
 }
 
 .word-div {
@@ -290,6 +324,22 @@ h1 {
 	width: 320px;
 }
 
+#saved-url-field {
+	font-size: 26px;
+	width: inherit;
+}
+
+#save-screen {
+	display: none;
+}
+
+#back-button-container {
+	display: inline-block;
+	width: 350px;
+	height: 100px;
+	z-index: 4;
+}
+
 
 
 .launcher-button:hover {
@@ -309,6 +359,7 @@ h1 {
 	left: 0;
 	display: none;
 	text-align: center;
+	z-index: 1;
 }
 
 .small-box {
@@ -325,6 +376,11 @@ h1 {
 #score-box, #timer, #quit-button, #undo-button {
 	display: inline-block;
 	margin: 5px 20px;
+}
+
+#score-box {
+	min-width: 180px;
+	text-align: left;
 }
 
 #quit-button, #undo-button {
@@ -398,17 +454,28 @@ h1 {
 	background-color: white;
 }
 
-#game-over {
-	visibility: hidden;
+
+#review-screen {
+	font-size: 24px;
+	line-height: 30px;
+	padding: 10px;
+	text-align: left;
+
+}
+
+#game-over-bar {
+	display: none;
 	width: 100%;
 	height: 120px;
 	position: absolute;
 	bottom: 0;
 	background-color: red;
-	color: white;
-	font-size: 40px;
 	text-align: center;
 	line-height: 120px;
+}
+
+#game-over-message {
+	display: none;
 }
 
 .screen {
@@ -418,15 +485,46 @@ h1 {
 	left: 0;
 	width: 100%;
 	height: 100vh;
-	z-index: 120;
+	z-index: 3;
 	text-align: center;
 }
+
+#about {
+	margin: 0px;
+	padding: 20px;
+    font-size: 20px;      
+	text-align: justify;
+	background-color: white;
+}
+
+a {
+	color: darkblue;
+}
+
+
+
+
+
+
 
 
 
 /* desktop screen */
 @media only screen and (min-width: 800px)  {   
 
+	.startscreen-box {
+		width: 40%;
+	}
+
+	#back {
+		top: 0px;
+		left: 0px;
+		font-size: 24px;
+	}
+
+	#screenshot-mobile {
+		width: 600px;
+	}
 
 
 
@@ -435,33 +533,55 @@ h1 {
 /* mobile screen */
 @media only screen and (max-width: 800px) {
 
+	#screenshot-mobile {
+		width: 90vw;
+	}
+
+
+	#back {
+		font-size: 16px;
+	}
+
+	footer {
+		font-size: 16px;
+		display: block;
+		bottom: 5px;
+	}
 
 	#start-text {
 		margin-top: 15px;
 	}
 
-	#settings-area {
+	.settings-area {
 		display: block;
 	}
 
-	.settings-box {
+	.settings-box, .startscreen-box {
 		font-size: 14px;
-		display: block;
 		margin-top: 10px;
 	}
+
+	.startscreen-box {
+		height: 25vh;
+		font-size: 40px;
+	}
+
 
 	.row {
 		margin: 5px 0;
 	}
 
-	#quickstart-button {
-		display: none;
-	}
+
 
 	.launcher-button {
 		width: 40vw;
 		font-size: .5em;
 		margin-bottom: 20px;
+		border-radius: 25px;
+		border: none;
+		background-color: #9effea;
+		color: darkblue;
+		font-weight: bold;
 	}
 
 	#start-icon {
@@ -475,6 +595,10 @@ h1 {
 
 	#save-button{
 		width: 40vw;
+	}
+
+	#quickstart-button {
+		display: none;
 	}
 
 	#paste-div, #paste-input {
@@ -491,9 +615,7 @@ h1 {
 	#birdpic-desktop {
 		display: none;
 	}
-	#subtitle {
-		width: 300px;
-	}
+
 
 	#challenges-container {
 		text-align: center;
@@ -509,19 +631,19 @@ h1 {
 	}
 
 	.word-div {
-		height: 40px;
+		height: 50px;
 		padding: 0 5px;
 		border-radius: 30px;
-		font-size: 24px;
-		line-height: 40px;
+		font-size: 28px;
+		line-height: 50px;
 	}
 
 	.small-word-div {
-		height: 35px;
+		height: 40px;
 		padding: 0 5px;
 		border-radius: 30px;
-		font-size: 16px;
-		line-height: 35px;	
+		font-size: 18px;
+		line-height: 40px;	
 	}
 
 	#answersentence {
@@ -559,9 +681,13 @@ h1 {
 		padding: 5px;
 	}
 
+	.reset-button{
+		height: 60px;
+	}
+
 	.victory-image-container{
 		position: absolute;
-		top: 75px;
+		top: 50px;
 		left: 0px;
 		z-index: 1;
 		text-align: center;
@@ -575,75 +701,100 @@ h1 {
 
 	}
 
-	h1, h2, br {
-		line-height: 0;
+
+	h2 {
+		font-size: 30px;
+		line-height: normal;
+
 	}
 
 
+	#status-bar {
+		height: 51px;
+		padding: 0 0;
+		width: 100%;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		display: none;
+		background-color: #3291a8;
+		text-align: center;
+	  	display: inline-block;
+	  	margin: 0 0;
+	}
+
+	.small-box {
+		height: 25px;
+		padding: 0 0;
+		border-radius: 25px;
+		background-color: white;
+		font-size: 14px;
+		line-height: 25px;
+	}
+
+	#score-box, #timer, #quit-button, #undo-button {
+		display: inline-block;
+		margin: 0 0;
+		vertical-align: top;
+		min-width: 70px;
+		font-weight: bold;
+	}
+
+	#score-box {
+		min-width: 100px;
+		padding: 0 5px;
+	}
 
 
+	#progress-box-outer {
+	  border-radius: 25px;
+	  border: solid #3291a8 1px;
+	  background-color: white;
+	  width: 100vw;
+	  height: 25px;
+	  text-align: center;
+	  font-family: sans-serif;
+	  line-height: 25px;
+	  font-size: 16px;
+	  font-weight: bold;
+	  color: green;
+	  position: relative;
+	  display: block;
+	  vertical-align: top;
+	  margin: 0 0;
+	}
+
+	#progress-box-inner {
+	  background-color: lightgreen;
+	  border-radius: inherit;
+	  height: inherit;
+	  position: absolute;
+	  top: 0;
+	  left: 0;
+	  opacity: 60%;
+	  display: inline-block;
+	  margin: 0 0;
+	}
+
+	#game-over-bar {
+		display: none;
+		width: 100%;
+		height: 120px;
+		position: absolute;
+		bottom: 0;
+		background-color: red;
+		color: white;
+		font-size: 40px;
+		text-align: center;
+		line-height: 120px;
+	}
+
+	#saved-url-field {
+		height: 100px;
+		word-wrap: normal;
+	}
 
 
-#status-bar {
-	height: 50px;
-	padding: 0 0;
-	width: 100%;
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	display: none;
-	background-color: #3291a8;
-	text-align: center;
-  	display: inline-block;
-  	margin: 0 0;
-}
-
-.small-box {
-	height: 25px;
-	padding: 0 0;
-	border-radius: 25px;
-	background-color: white;
-	font-size: 14px;
-	line-height: 25px;
-}
-
-#score-box, #timer, #quit-button, #undo-button {
-	display: inline-block;
-	margin: 0 0;
-	vertical-align: top;
-	min-width: 70px;
-	font-weight: bold;
-}
-
-
-#progress-box-outer {
-  border-radius: 25px;
-  background-color: white;
-  width: 100vw;
-  height: 25px;
-  text-align: center;
-  font-family: sans-serif;
-  line-height: 25px;
-  font-size: 16px;
-  font-weight: bold;
-  color: green;
-  position: relative;
-  display: block;
-  vertical-align: top;
-  margin: 0 0;
-}
-
-#progress-box-inner {
-  background-color: lightgreen;
-  border-radius: inherit;
-  height: inherit;
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 60%;
-  display: inline-block;
-  margin: 0 0;
-}
 
 
 }

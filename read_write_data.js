@@ -1,9 +1,9 @@
-//First, make sure ajax doesn't load the old json data from the cache:
+	//First, make sure ajax doesn't load the old json data from the cache:
 jQuery.ajaxSetup({
 	cache: false
 });
 
-function readOrWriteData(saveId, readOrWrite, randMode, groupSize, text, fileName) {
+function readOrWriteData(saveId, readOrWrite, randMode, chunkSize, text, fileName) {
 //The arguments of this getdata() function must be named differently from the variables saveCode, randomMode, etc.
 	//Step 1: get the existing data
 		$.ajax({
@@ -21,7 +21,7 @@ function readOrWriteData(saveId, readOrWrite, randMode, groupSize, text, fileNam
 		    		var newObj = Object.create(null);  //Creating a new object w/ an array of sentences to add to the JSON file - null means no prototype for the object; not basing it off any other bject
 		    		newObj.saveCode = saveId;
 		    		newObj.randomMode = randMode;
-		    		newObj.wordGroupSize = groupSize;	
+		    		newObj.wordChunkSize = chunkSize;	
 		    		newObj.textArray = text;
 		    		existingData.push(newObj);  //Step 2: push new data:
 		    		writeData(fileName);  //only run this once the getData() AJAX is finished
@@ -33,7 +33,7 @@ function readOrWriteData(saveId, readOrWrite, randMode, groupSize, text, fileNam
 					    if (existingData[i].saveCode == saveCode) {
 					    	//load up the settings:
 					    	listOfSentences = existingData[i].textArray;  //index is which array in the array of arrays in the JSON file.  This array will get set as listOfSentences
-		    				wordGroupSize = existingData[i].wordGroupSize;
+		    				wordChunkSize = existingData[i].wordChunkSize;
 					        randomMode = existingData[i].randomMode;
 							console.log("Success! listOfSentences = " + listOfSentences);
 					    };
@@ -71,19 +71,6 @@ function writeData(fileName) {
 	dataToWrite = []; //reset this for next time
 };
 
-function clearData(fileName) {  //erases everything from JSON file!
 
-	$.ajax({
-	    type : "POST",
-	    url : "save.php",
-	    async : false,  //haven't checked if I actually need this
-	    data : {
-	    	json : "[]",
-	   		filename: fileName 
-	    }
-	});
-
-	console.log("Data successfully cleared.");
-}
 
 
