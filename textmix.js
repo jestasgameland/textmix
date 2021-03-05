@@ -1,9 +1,22 @@
 
+const urlParams = new URLSearchParams(window.location.search); //get everything after the ?
+var needToLoadSaved = urlParams.get('loadsavedtext');
+var saveCode = urlParams.get('savecode');  //(null if there's no saveCode specified)
+var researchMode = urlParams.get('researchmode');
+if (researchMode == 'true') { researchMode = true } //convert string to boolean
+else {researchMode = false};  
+	
+var scraperMode = urlParams.get('scrapermode');
+if (scraperMode == 'true') { //convert string to boolean
+	scraperMode = true;
+} else {scraperMode = false;}
+var level = urlParams.get('level');  //which level JSON file to save the scraped text in
 
 var mobile = false;
 if (window.innerWidth<800) {
 	mobile = true;
 }
+
 
 //display or hide the language setting for wikipedia and the box to paste text if these settings are selected:
 function languagePopup(yes) {
@@ -68,6 +81,7 @@ var time;
 var timer = document.getElementById('timer');
 var score = 0;
 var count = 0;
+var rawText;
 var listOfSentences = [];
 var rand;
 var rainbowMode = false;
@@ -83,6 +97,7 @@ var wordsToUndo =[];
 var undoHistory =[];
 var indexOfBlank;
 var wordsEntered = 0;   //number of words that have been clicked so far
+var strikes = 3;
 var wordChunkSize = 5; 
 var clozeSentence = [];
 var clozeWords = [];
@@ -116,7 +131,16 @@ var tryAgain;
 var saved;
 var existingData;
 var presetTexts = [];
-var dataToWrite = ['test sentence 1', 'test sentence 2'];
+var printingWorksheet = false;
+
+//for research mode:
+var correctSentences = [];
+var failedSentences = [];
+var username;
+// (no game over or strikes in research mode)
+
+
+
 var loadScreen;
 var undoButton = document.getElementById("undo-button");
 var skipButton = document.getElementById("skip-button");
@@ -128,6 +152,11 @@ var saveScreen = document.getElementById("save-screen");
 	undoButton.addEventListener("click", undo);
 	skipButton.addEventListener("click", ready);
 	quitButton.addEventListener("click", resetApp);
+	if (researchMode) {
+		var txt = "Save & Quit";
+		quitButton.innerHTML = txt;
+		document.getElementById("main-menu-button").innerHTML = txt;
+	};
 	document.getElementById("main-menu-button").addEventListener("click", resetApp);
 	document.getElementById("try-again-button").addEventListener("click", function() {
 		tryAgain = true;
@@ -148,25 +177,12 @@ var saveScreen = document.getElementById("save-screen");
 loadTxtFile("100commonwords.txt");  //load the grammarList
 
 
-const urlParams = new URLSearchParams(window.location.search); //get everything after the ?
-var needToLoadSaved = urlParams.get('loadsavedtext');
-var saveCode = urlParams.get('savecode');  //(null if there's no saveCode specified)
-
-
-var scraperMode = urlParams.get('scrapermode');
-if (scraperMode == 'true') { //convert string to boolean
-	scraperMode = true;
-} else {scraperMode = false;}
-var level = urlParams.get('level');  //which level JSON file to save the scraped text in
-
-//figure out where to write the data:
+//figure out where to write the data for scraper mode:
 var textFile;
 if (!scraperMode) {textFile = 'data.json'} //usual main JSON file
 else {
 	textFile = 'studentmode_texts/' + level + '.json';  // beg.json, hi_beg.json, etc.
 };
-
-
 
 
 
@@ -181,7 +197,14 @@ function goToStartScreen() {
 	disappear(document.getElementById('back'));
 }
 
-goToStartScreen();
+goToStartScreen()
+
+if (researchMode) { 
+	disappear(document.getElementById('settings-area'));
+	document.getElementById('start-text').innerHTML += "Please choose a text to start:"
+	username = prompt("Please enter your username:");
+	setTeacherStudent(true);  //skip the teacher/student select screen
+} 
 
 
 function setTeacherStudent(student) {
@@ -190,9 +213,9 @@ function setTeacherStudent(student) {
 	if (student) {
 		studentMode = true;
 		dataSource = "preset text";
-		challengesPopup(true, 'studentmode_texts/hi_beg.json');  //start with this set of challenges
-		document.getElementById('studentmode-level-settings').style.display = "block";
-		document.getElementById('learning-mode-settings').style.display = "block";
+		challengesPopup(true, 'studentmode_texts/int.json');  //start with this set of challenges
+		if (!researchMode) {document.getElementById('studentmode-level-settings').style.display = "block"};
+		if (!researchMode) {document.getElementById('learning-mode-settings').style.display = "block" }; //researchMode is only for sentence jumble activities (no cloze)
 	}
 	else {
 		$('#settings-screen').css("display","block");
@@ -210,7 +233,7 @@ function setTeacherStudent(student) {
 	disappear(saveScreen);
 	disappear(document.getElementById('select-teacher-student'));
 	document.querySelector('footer').style.visibility = "hidden"; 
-	document.getElementById("back").style.display = "block";
+	if (!researchMode) {document.getElementById("back").style.display = "block" };
 }
 
 
@@ -258,8 +281,6 @@ function makePresetTextDivs() {  //This function gets run by readOrWriteData aft
 					challengesContainer.removeChild(challengesContainer.firstChild);
 				}
 
-			//	challengesContainer.innerHTML = '';
-
 			//make the preset text (challenge) divs:
 		for (i=0; i<presetTexts.length; i++) {
 			var challengeDiv = document.createElement('div');
@@ -275,6 +296,7 @@ function makePresetTextDivs() {  //This function gets run by readOrWriteData aft
 		for (i=0; i<presetTexts.length; i++) {
 			document.getElementById("challenge-"+i).addEventListener("click", function() {
 				var index = parseInt(this.id.substr(10));  //get the number of the challenge div (same as i, but can't use i here because i is part of this FOR loop, which can't be seen by the function later on)
+				rawText = presetTexts[index].join(". ");
 				listOfSentences = presetTexts[index];
 				runApp();
 			});
@@ -343,6 +365,7 @@ function saveAndShare() {  //save the text you chose and spit out a URL to share
 
 
 	function writeWikiText() { //after wikiSearch is complete, run this as callback function.
+		rawText = document.getElementById("hidden-text-div").textContent;
 		listOfSentences = document.getElementById("hidden-text-div").textContent.split('. ');
 		readOrWriteData(saveCode, "write", randomMode, wordChunkSize, listOfSentences, textFile);
 	}
@@ -363,9 +386,59 @@ function saveAndShare() {  //save the text you chose and spit out a URL to share
 		window.location.href = urlToShare;   // go to the link just created
 	});
 
-	backButtonContainer.appendChild(playNowButton);
-
+	$("#back-button-container").appendChild(playNowButton);
 }
+
+
+
+function printWorksheet() {
+
+	printingWorksheet = true;
+
+	var worksheetData;
+
+	if (learningMode == 'jumble') {worksheetData = "<h3>Name: _______________________</h3><h3><b>Directions:&nbsp;</b>Reorder the words to make a sentence.</h3>"}
+	else {worksheetData = "<h3>Name: _______________________</h3><h3><b>Directions:&nbsp;</b>Write the correct word in each blank.</h3>"};
+
+	
+
+	for (j=0; j<listOfSentences.length; j++) {
+
+		prepareSentence();  // this sets up jumbledSentence!
+
+		//for jumble mode:
+		if (learningMode == 'jumble') {
+
+			var wordChunk;
+			var item ='';
+			var wordBank = '';
+
+			for(i=0; i<jumbledSentence.length; i++) {
+				wordChunk = jumbledSentence[i].join(" ");  
+				item += wordChunk + "  /  ";
+			};
+
+			worksheetData += (j+1) + ".  " + item + "<br><br>________________________________________________________<br><br>";
+		}
+		//for cloze mode:
+		else {
+			item = clozeSentence.join(" ");
+			
+			if (jumbledSentence != undefined) {  //as long as there are articles in the sentence
+				for(i=0; i<jumbledSentence.length; i++) {
+					wordBank += jumbledSentence[i] + "&nbsp;&nbsp;&nbsp;&nbsp;";
+				}
+			}
+			worksheetData += (j+1) + ".  " + item + "<br><br>" + wordBank + "<br><br>";
+		}
+
+		count ++ ;  // loop through listOfSentences
+	}
+
+	var newWindow = window.open();
+	newWindow.document.write(worksheetData);
+}
+
 
 
 function goToLoadScreen() {
@@ -384,7 +457,7 @@ function goToLoadScreen() {
 			disappear(document.getElementById("load-screen"));
 		});  
 
-		setInterval(incrementTime, 100);
+		setInterval(incrementTime, 1000);
 	});
 	
 	loadScreen.appendChild(loadStartButton);
@@ -392,31 +465,6 @@ function goToLoadScreen() {
 }
 
 
-
-function runApp() {
-		searchTerm = document.getElementById('search-term').value;
-		if (dataSource=='wikipedia' && searchTerm == ''){
-			alert('Please enter a search term!');
-			return;
-		}
-
-		if (needToLoadSaved == "yes") {  //if ready() and getText() have already been run via  make_text_file.js
-			goToLoadScreen()
-		} 
-		else {  //need to get text via getText() below
-			$("#settings-screen").fadeOut(500, function () {
-				disappear(document.getElementById("settings-screen"));
-			});
-
-			if (timer.style.display != "none") {  //as long as the timer is turned on
-				setInterval(incrementTime, 100);
-			};
-
-			statusBar.style.display = "inline-block";
-
-			getText();
-		}		
-}
 
 function getSettings() {
 	//check the radio button settings:
@@ -501,7 +549,34 @@ function checkRadio(radioName) {
 		} ;
 	};
 };
-											//   /(?<!Mr)./
+
+
+function runApp() {
+
+		searchTerm = document.getElementById('search-term').value;
+		if (dataSource=='wikipedia' && searchTerm == ''){
+			alert('Please enter a search term!');
+			return;
+		}
+
+		if (needToLoadSaved == "yes") {  //if ready() and getText() have already been run via  make_text_file.js
+			goToLoadScreen()
+		} 
+		else {  //need to get text via getText() below
+			$("#settings-screen").fadeOut(500, function () {
+				disappear(document.getElementById("settings-screen"));
+			});
+
+			if (timer.style.display != "none" || researchMode) {  //as long as the timer is turned on, or secretly time them in researchMode
+				setInterval(incrementTime, 1000);
+			};
+
+			statusBar.style.display = "inline-block";
+
+			getText();
+		}		
+}
+									
                                          
 function cleanSentence(sentence) {        
 	try {	//if there aren't any periods or newlines to replace, this prevents an error 
@@ -559,7 +634,7 @@ function makeClozeSentence() {
 	foundArticle = false;
 	wordChunksArray[wordChunksArray.length-1] += '.';  //add period to last word
 
-	if (count < listOfSentences.length-2) {  //as long as there are still 2 sentences left to get
+	if (!printingWorksheet && count < listOfSentences.length-2) {  //as long as there are still 2 sentences left to get
 		count++;  //get 2 sentences instead of 1 (better for articles, prepositions, etc)
 		finishedSentences++;
 		wordChunksArray = wordChunksArray.concat(getOneSentence().split(' '));
@@ -594,8 +669,8 @@ function ready() {
 		skipButton.style.display = "none";
 		undoButton.style.display = "inline-block";  //put back undo button (was removed by addSkipButton())
 		wordsEntered ++;
-		checkWin();
-		skip=false;
+		checkAnswer();
+		skip = false;
 	};
 	prepareSentence();
 	makeDivs();
@@ -636,12 +711,13 @@ function getText() {
 			break;
 
 		case "paste":
-			var text = document.getElementById('paste-input').value.replace(/.  /g, ". ");  //remove double spaces
-			listOfSentences = text.split(". ");   //    /(?<!Mr)./
+			rawText = document.getElementById('paste-input').value.replace(/.  /g, ". ");  //remove double spaces
+			listOfSentences = rawText.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s/);  //regex negative lookbehind
 			ready();
 			break;
 
 		default:   //if user chose to use the preset string of sentences
+			rawText = preMadeList;
 			listOfSentences = preMadeList.split(". ");
 			ready();
 	};	
@@ -691,10 +767,12 @@ function addSkipButton() {
 
 function makeDivs() {
 
-	time = 500;
+	if (!researchMode) { time = 60 }
+	else {time = 0};
 
 	//reset stuff:
 	answerBox.style.backgroundColor = 'white';
+	answerSentence.style.backgroundColor = 'white';
 	answerSentence.style.color = '#4286f4';
 	undoHistory = [];
 	if(wordChunksArray.length>1) {  //no need for undo button if only one word-div to click
@@ -814,73 +892,110 @@ function clickedWord() {   //When you click a word/words
 	wordsEntered ++;
 
 	if(wordsEntered == jumbledSentence.length) {   //if all the words in the senetence have been entered
-		checkWin();
+		checkAnswer();
 	}
 };
 
 
-function checkWin() {
+function checkAnswer() {
 
 		answer = answerSentence.textContent;  //must use innerText, not innerHTML because &nbsp characters sometimes come up in wikipedia - innerText just renders them as normal spaces
 
 		// IF CORRECT   (cloze modes do not add an extra space at the end)
 		if(answer == sentenceString + ' ' || answer == wordChunksArray.join(" ") && learningMode!='jumble' || skip==true) {  //if you're skipping this last sentence, automatically win, don't even check for correctness
-
-			if (!skip) {
-				answerSentence.innerHTML = answer.substr(answer[0],answer.length-1) + '.'; //add period to the end.  Skip will have already added one.
-			}
-
-			//Inrease score:
-			score += wordChunksArray.length * time;
-			finishedSentences ++;
-			document.getElementById('score-box').innerHTML = "Score: " + score;	
-			
-			//Increase progress meter:
-			var totalSentences = listOfSentences.length;
-			progress = Math.floor(100*(finishedSentences / totalSentences));
-			document.getElementById('progress-box-outer').innerHTML = "Progress: " + progress + "% <div id='progress-box-inner'></div>";
-			var width = document.getElementById('progress-box-outer').offsetWidth;
-			document.getElementById('progress-box-inner').style.width = (progress/100)*width + "px";
-
-			if (progress == 100) {   // all sentences are finished - YOU WIN!
-				win();
-				return;  //stop reading this block of code (stuff below is for if you've not yet won the game)
-			};
-
-			if (rainbowMode) {
-				changeScreenColor();				
-			};
-
-			// if not won yet, get the next sentence(s):
-			if (randomMode) {
-				listOfSentences.splice(listOfSentences.indexOf(sentenceString), 1);  //remove the sentence so it doesn't come up again
-			} else {
-				count ++   //move to the next sentence in listOfSentences (only if randomMode is off)
-			};
-
-			prepareSentence();
-			displayCharacter();
-			setTimeout(makeDivs, 1000);  //Wait a sec before you get the next sentence
+			correctAnswer();
 		}
-
-		else { gameOver() }; //GAME OVER
+		else { wrongAnswer() }; 
 	};
 
+function correctAnswer() {
 
-function gameOver() {
-	undoButton.style.display = "none";
-	statusBar.style.display = "none";
+	if (!skip) {
+		answerSentence.innerHTML = answer.substr(answer[0],answer.length-1) + '.'; //add period to the end.  Skip will have already added one.
+	}
+
+	//Inrease score:
+	if (!researchMode) {score += wordChunksArray.length * time}
+	else {score += wordChunksArray.length * 100};
+	finishedSentences ++;
+	correctSentences.push(answer);
+	document.getElementById('score-box').innerHTML = "Score: " + score;	
+
+	//Record if research mode:
+	if (researchMode) { recordForResearch(username, sentenceString, null, time) };
+	
+	//Increase progress meter:
+	var totalSentences = listOfSentences.length;
+	progress = Math.floor(100*(finishedSentences / totalSentences));
+	document.getElementById('progress-box-outer').innerHTML = "Progress: " + progress + "% <div id='progress-box-inner'></div>";
+	var width = document.getElementById('progress-box-outer').offsetWidth;
+	document.getElementById('progress-box-inner').style.width = (progress/100)*width + "px";
+
+	if (progress == 100) {   // all sentences are finished - YOU WIN!
+		win();
+		return;  //stop reading this block of code (stuff below is for if you've not yet won the game)
+	};
+
+	if (rainbowMode) {
+		changeScreenColor();				
+	};
+
+	// if not won yet, get the next sentence(s):
+	if (randomMode) {
+		listOfSentences.splice(listOfSentences.indexOf(sentenceString), 1);  //remove the sentence so it doesn't come up again
+	} else {
+		count ++   //move to the next sentence in listOfSentences (only if randomMode is off)
+	};
+
+	prepareSentence();
+	displayCharacter();
+	setTimeout(makeDivs, 1000);  //Wait a sec before you get the next sentence
+}
+
+
+function wrongAnswer() {
+
+	if (!researchMode) {strikes -- };
+
+	//Record if research mode:
+	if (researchMode) { recordForResearch(username, null, sentenceString, time) };
+
+	failedSentences.push(answer);
 	answerBox.style.backgroundColor = 'red';
 	answerSentence.style.backgroundColor = 'red';
 	answerSentence.style.color = 'white';
+	answerSentence.innerHTML = "Sorry, try again!<br><br>";
+	
+	if (!researchMode){
+		if (strikes>1) {answerSentence.innerHTML += strikes + " tries left"}
+		else {answerSentence.innerHTML += strikes + " try left"};
+	}
 
-	//display the correct answer:
+	score = 0;  //score gets reset if wrong answer
+	document.getElementById('score-box').innerHTML = "Score: " + score;	
+
+	if (!researchMode && strikes == 0) {  // 3 strikes and you're out!
+		gameOver();
+	} else {
+		setTimeout(makeDivs, 1500);  //try the sentence again)
+	};
+}
+
+
+
+function showCorrectAnswer() {
 	if (learningMode !='jumble') {
 		answerSentence.innerHTML = wordChunksArray.join(" ");
 	} else {
 	answerSentence.innerHTML = sentenceString;
 	}
+}
 
+
+function gameOver() {
+	showCorrectAnswer();
+	disappear(undoButton);
+	disappear(statusBar);
 	$("#game-over-bar").css("display", "block");
 	$("#game-over-message").css("display", "block");
 	$(".reset-button").css("display", "inline-block");
@@ -888,10 +1003,14 @@ function gameOver() {
 
 
 function resetApp() {
-	
+	// reset research Mode variables:
+	correctSentences = [];
+	failedSentences = [];
+
 	//reset variables:
 	saved = false;
 	score = 0;
+	strikes = 3;
  	count = 0;
  	skip = false;
  	wordsEntered = 0;
@@ -991,9 +1110,10 @@ function goToReviewScreen() {
 	reviewScreen.id = "review-screen";
 	document.body.appendChild(reviewScreen);
 
-	for (i=0; i<listOfSentences.length; i++) {
-		reviewScreen.innerHTML += listOfSentences[i] + ". ";
-	};
+	reviewScreen.innerHTML += rawText;
+//	for (i=0; i<listOfSentences.length; i++) {
+//		reviewScreen.innerHTML += listOfSentences[i] + ". ";
+//	};
 
 	reviewScreen.addEventListener("click", resetApp);
 }
@@ -1027,18 +1147,20 @@ function changeScreenColor() {
 }
 
 function incrementTime() {
-	
-	if (time == 0) {
+//Game over if time runs out:
+	if (researchMode) {time ++}
+	else {
+		if (time == 0) {
 		//stop decreasing time
 		//$("#game-over-bar").css("display", "block");
 		//setTimeout(resetApp, 2000);
+		}	
+		else {
+			time --;
+			timer.innerHTML = "Time: " + time; 
+		}
 	}
-
-	else {
-		time --;
-		timer.innerHTML = "Time: " + time; 
-	}
-}
+}	
 
 function displayCharacter() {
 	var imageFile = "images/playing" + Math.floor(Math.random()*6+1) +".gif";

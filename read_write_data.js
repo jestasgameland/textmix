@@ -6,57 +6,57 @@ jQuery.ajaxSetup({
 function readOrWriteData(saveId, readOrWrite, randMode, chunkSize, text, fileName) {
 //The arguments of this getdata() function must be named differently from the variables saveCode, randomMode, etc.
 	//Step 1: get the existing data
-		$.ajax({
-		    type : "GET",
-		    url : fileName,
-		    async : true,  //need this so it waits for writeData() to update the json data file
-		    dataType : 'json',
-		    success : function(response) {
-		    	console.log("Read data successfully.");
-		    	existingData = response;  //existingData (JSON file) is an array of objects
-		    	console.log("existingData = " + existingData);
+	$.ajax({
+	    type : "GET",
+	    url : fileName,
+	    async : true,  //need this so it waits for writeData() to update the json data file
+	    dataType : 'json',
+	    success : function(response) {
+	    	console.log("Read data successfully.");
+	    	existingData = response;  //existingData (JSON file) is an array of objects
+	    	console.log("existingData = " + existingData);
 
-		    	if (readOrWrite == 'write') { //if this function is used to write
+	    	if (readOrWrite == 'write') { //if this function is used to write
 
-		    		var newObj = Object.create(null);  //Creating a new object w/ an array of sentences to add to the JSON file - null means no prototype for the object; not basing it off any other bject
-		    		newObj.saveCode = saveId;
-		    		newObj.randomMode = randMode;
-		    		newObj.wordChunkSize = chunkSize;	
-		    		newObj.textArray = text;
-		    		existingData.push(newObj);  //Step 2: push new data:
-		    		writeData(fileName);  //only run this once the getData() AJAX is finished
-		    	}
-		    	else if (readOrWrite == 'read one text') {  //if this function is used only to read
+	    		var newObj = Object.create(null);  //Creating a new object w/ an array of sentences to add to the JSON file - null means no prototype for the object; not basing it off any other bject
+	    		newObj.saveCode = saveId;
+	    		newObj.randomMode = randMode;
+	    		newObj.wordChunkSize = chunkSize;	
+	    		newObj.textArray = text;
+	    		existingData.push(newObj);  //Step 2: push new data:
+	    		writeData(fileName);  //only run this once the getData() AJAX is finished
+	    	}
+	    	else if (readOrWrite == 'read one text') {  //if this function is used only to read
 
-		    		//find the text with the right savecode:
-			    	for (i=0; i<existingData.length; i++) {
-					    if (existingData[i].saveCode == saveCode) {
-					    	//load up the settings:
-					    	listOfSentences = existingData[i].textArray;  //index is which array in the array of arrays in the JSON file.  This array will get set as listOfSentences
-		    				wordChunkSize = existingData[i].wordChunkSize;
-					        randomMode = existingData[i].randomMode;
-							console.log("Success! listOfSentences = " + listOfSentences);
-					    };
-					};
-					ready();  //start the game (makes the word divs, etc.)
-					runApp(); // shove the load screen in front of everything until user is ready to press "START"
-		    	}
-		    	else if (readOrWrite == 'get all texts') {  //If we're just loading the texts to populate the preset challenges divs
-		    		presetTexts = [];  //reset it
-		    		for (i=0; i<existingData.length; i++) {
-		    			presetTexts.push(existingData[i].textArray);
-		    		}
-		    		makePresetTextDivs();  //need to include this here instead of index.html as callback function, can only be run once the presetTexts have been laoded
-		    	}
-		    	else{};
-		    }
-		});
+	    		//find the text with the right savecode:
+		    	for (i=0; i<existingData.length; i++) {
+				    if (existingData[i].saveCode == saveCode) {
+				    	//load up the settings:
+				    	listOfSentences = existingData[i].textArray;  //index is which array in the array of arrays in the JSON file.  This array will get set as listOfSentences
+	    				wordChunkSize = existingData[i].wordChunkSize;
+				        randomMode = existingData[i].randomMode;
+						console.log("Success! listOfSentences = " + listOfSentences);
+				    };
+				};
+				ready();  //start the game (makes the word divs, etc.)
+				runApp(); // shove the load screen in front of everything until user is ready to press "START"
+	    	}
+	    	else if (readOrWrite == 'get all texts') {  //If we're just loading the texts to populate the preset challenges divs
+	    		presetTexts = [];  //reset it
+	    		for (i=0; i<existingData.length; i++) {
+	    			presetTexts.push(existingData[i].textArray);
+	    		}
+	    		makePresetTextDivs();  //need to include this here instead of index.html as callback function, can only be run once the presetTexts have been laoded
+	    	}
+	    	else{};
+	    }
+	});
 }
 
 	
 function writeData(fileName) {	
-	//Step 3: post the newly updated existingData back to data.json:
 
+	//Step 3: post the newly updated existingData back to data.json:
 	$.ajax({
 	    type : "POST",
 	    url : "save.php",
@@ -68,9 +68,60 @@ function writeData(fileName) {
 	});
 
 	console.log("Wrote data successfully.");
-	dataToWrite = []; //reset this for next time
 };
 
 
 
 
+//For research mode:
+
+function recordForResearch(user, correctSentence, failedSentence, totalTime) {
+	$.ajax({
+	    type : "GET",
+	    url : 'research_data.json',
+	    async : true,
+	    dataType : 'json',
+	    success : function(response) {
+
+	    	existingData = response;  //existingData (JSON file) is an array of user objects
+
+	    	var userFound = false;
+	    	var totalSentences;
+
+	    	//see if the user already exists:
+	    	for (i=0; i<existingData.length; i++) {
+	    		if (existingData[i].username == user) { 
+	    			userFound = true;
+	    			console.log("User found");
+					if (correctSentence != null) { existingData[i].correctSentences.push(correctSentence) };
+	    			if (failedSentence != null) { existingData[i].failedSentences.push(failedSentence) };
+	    			existingData[i].noOfCorrectSentences = existingData[i].correctSentences.length;
+	    			existingData[i].noOfFailedSentences = existingData[i].failedSentences.length;
+	    			totalSentences = existingData[i].noOfCorrectSentences + existingData[i].noOfFailedSentences;
+	    			existingData[i].playTimeMinutes += (totalTime/60);
+	    			existingData[i].avgSecondsPerSentence = (existingData[i].playTimeMinutes*60) / totalSentences;
+	    		}
+	    	}
+			//if user doesn't exist, make new object for this user:
+	    	if (!userFound) {
+	    		console.log("User not found");
+	    		var newObj = Object.create(null);
+	    		newObj.username = username;  //This is from the username global variable in main textmix.js file
+	    		newObj.correctSentences = [];
+	    		newObj.failedSentences = [];
+
+				if (correctSentence != null) { newObj.correctSentences.push(correctSentence) };
+    			if (failedSentence != null) { newObj.failedSentences.push(failedSentence) };	
+    			newObj.noOfCorrectSentences = newObj.correctSentences.length;
+    			newObj.noOfFailedSentences = newObj.failedSentences.length;
+    			totalSentences = newObj.noOfCorrectSentences + newObj.noOfFailedSentences;
+    			newObj.playTimeMinutes += (totalTime/60);
+    			newObj.avgSecondsPerSentence = (newObj.playTimeMinutes*60) / totalSentences;	
+
+	    		existingData.push(newObj); 
+	    	}
+
+	   		writeData('research_data.json'); 
+	    }
+	});
+};
