@@ -3,8 +3,14 @@ TextMix - An app for automating the creation of "word jumble" and cloze activiti
 
 RECENT UPDATES:
 - mobile support
+- - added "research mode" - pass through URL (?=researchmode=true) - This records the number of correct/incorrect answers by the user
 - added cloze modes, for focusing on grammar structures or 100 most common words in English
-- added reading mode
+- added option to create printable worksheet on save screen
+- added reading mode (sentences stay on screen after being solved)
 - added teacher/student modes and review screen
 - cleaner code and more user-friendly, many bug fixes and popup explanations
 - added "about" page
+
+TO DO:
+- Add more texts to the student mode for testing
+- Add more options for authentic sources of text - NY Times API, CNN news API
