@@ -94,7 +94,7 @@ footer {
 }
 
 
-.settings-area {
+#settings-area {
 	min-height: 200px;
 	width: 100%;
 	display: flex;
@@ -153,8 +153,8 @@ footer {
 	color: white;
 }
 
-#language-settings-box {
-	opacity: 100%;
+#language-settings {
+	opacity: 50%;
 }
 
 #paste-input {
@@ -552,7 +552,7 @@ a {
 		margin-top: 15px;
 	}
 
-	.settings-area {
+	#settings-area {
 		display: block;
 	}
 

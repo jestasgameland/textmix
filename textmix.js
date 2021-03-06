@@ -109,7 +109,7 @@ var grammarList = [];
 var clickedDivs = [];
 var undoCount = 0;
 var skip = false;
-var dataSource = "wikipedia";
+var dataSource;
 var searchTerm;
 var language = "simple";
 var learningMode;
@@ -366,7 +366,7 @@ function saveAndShare() {  //save the text you chose and spit out a URL to share
 
 	function writeWikiText() { //after wikiSearch is complete, run this as callback function.
 		rawText = document.getElementById("hidden-text-div").textContent;
-		listOfSentences = document.getElementById("hidden-text-div").textContent.split('. ');
+		listOfSentences = document.getElementById("hidden-text-div").textContent.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);
 		readOrWriteData(saveCode, "write", randomMode, wordChunkSize, listOfSentences, textFile);
 	}
 
@@ -595,7 +595,7 @@ function getOneSentence() {
 
 	if(dataSource == "wikipedia" && needToLoadSaved != "yes"){  //a.k.a. if we still need to send a request to wikipedia API
 		//hidden-text-div is where wikiSearch put the text
-		listOfSentences = document.getElementById("hidden-text-div").textContent.split('. ');
+		listOfSentences = document.getElementById("hidden-text-div").textContent.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);
 	};
 
 	//if source is not wikipedia, listOfSentences was already set by getText()
@@ -705,6 +705,10 @@ function getText() {
 			ready();
 			break;
 
+		case "news":
+			newsSearch("hidden-text-div", ready);
+			break;
+
 		case "wikipedia":
 			var searchTerm = document.getElementById('search-term').value;
 			wikiSearch(searchTerm, language, "hidden-text-div", ready);
@@ -712,13 +716,13 @@ function getText() {
 
 		case "paste":
 			rawText = document.getElementById('paste-input').value.replace(/.  /g, ". ");  //remove double spaces
-			listOfSentences = rawText.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s/);  //regex negative lookbehind
+			listOfSentences = rawText.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);  //regex negative lookbehind
 			ready();
 			break;
 
 		default:   //if user chose to use the preset string of sentences
 			rawText = preMadeList;
-			listOfSentences = preMadeList.split(". ");
+			listOfSentences = preMadeList.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);
 			ready();
 	};	
 };

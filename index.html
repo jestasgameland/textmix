@@ -34,7 +34,7 @@
 			<div id='select-teacher-student'><h2>I am a:</h2></div>
 		</div>
 
-		<div class="settings-area">
+		<div id="settings-area">
 			<div class="startscreen-box" id='studentmode-button' onclick='setTeacherStudent(true)'>
 				<h3>Student</h3>
 			</div>
@@ -88,26 +88,28 @@
 			</div>
 
 			<div class="settings-box" id='learning-mode-settings'>
-				<h3>Learning Mode</h3>
+				<h3>Learning Focus</h3>
 				<input type="radio" id="radio-learning-jumble" name="learning" value="jumble" checked="checked" >
-				<label for="radio-learning-jumble">Focus on syntax/word order</label><br>
+				<label for="radio-learning-jumble">Syntax / word order</label><br>
 				<input type="radio" id="radio-learning-articles" name="learning" value="articles" >
-				<label for="radio-learning-articles">Focus on articles</label><br>
+				<label for="radio-learning-articles">Articles</label><br>
 				<input type="radio" id="radio-learning-prepositions" name="learning" value="prepositions">
-				<label for="radio-learning-prepositions">Focus on prepositions</label><br>
+				<label for="radio-learning-prepositions">Prepositions</label><br>
 				<input type="radio" id="radio-learning-grammar" name="learning" value="grammar">
-				<label for="radio-learning-grammar">Focus on grammatical words</label><br>
+				<label for="radio-learning-grammar">Common words</label><br>
 				<input type="radio" id="radio-learning-cloze" name="learning" value="cloze">
-				<label for="radio-learning-cloze">nth word cloze (n=chunk size)</label><br>
+				<label for="radio-learning-cloze">Cloze (Gap fill)</label><br>
 			</div>
 
 
 			<div class="settings-box" id='text-source-settings'>
 				<h3>Text source</h3>
 
-				<input onclick="languagePopup(true); pastePopup(false); challengesPopup(false)" type="radio" id="radio-wikipedia" name="datasource" value="wikipedia" checked="checked">
-				<label for="radio-wikipedia">Wikipedia</label><br>
+				<input onclick="languagePopup(false); pastePopup(false); challengesPopup(false)" type="radio" id="radio-news" name="datasource" value="news" checked="checked">
+				<label for="radio-news">News Headlines (NEW!)</label><br>
 
+				<input onclick="languagePopup(true); pastePopup(false); challengesPopup(false)" type="radio" id="radio-wikipedia" name="datasource" value="wikipedia">
+				<label for="radio-wikipedia">Wikipedia</label><br>
 
 				<input onclick="languagePopup(false); pastePopup(false); challengesPopup(true, 'data.json')" type="radio" id="radio-textfile" name="datasource" value="preset text">
 				<label for="radio-textfile">Preset Challenges</label><br>
@@ -116,10 +118,6 @@
 				<input onclick="languagePopup(false); pastePopup(true); challengesPopup(false)" type="radio" id="radio-paste" name="datasource" value="paste">
 				<label for="radio-paste">Paste text</label><br>
 
-
-				<input onclick="languagePopup(false); pastePopup(false); challengesPopup(false)" type="radio" id="radio-preset" name="datasource" value="test string">
-				<label for="radio-preset">Test String</label><br>
-
 			</div>
 
 			<div class="settings-box" id='language-settings'>
@@ -127,9 +125,10 @@
 				<input type="radio" id="radio-simple-english" name="language" value="simple" checked="checked" >
 				<label for="radio-simple-english">Simple English</label><br>
 				<input type="radio" id="radio-english" name="language" value="en">
-				<label for="radio-english">Normal English</label><br>
+				<label for="radio-english">Normal English</label><br> <!--
 				<input type="radio" id="radio-japanese" name="language" value="ja">
 				<label for="radio-japanese">Japanese</label><br>
+			-->
 				<h3>Search term</h3>
 				<input type="text" id="search-term" placeholder="(tea, Barack Obama, France...)">
 
@@ -183,6 +182,7 @@
 		<div id="back-button-container">
 			<div class="launcher-button" style="display: inline-block" onclick="setTeacherStudent(false)">&#8249; Back</div>
 			<div class="launcher-button" id='play-now' style="display: inline-block">Play Now</div>
+			<div class="launcher-button" id='print' style="display: inline-block; font-size: .4em" onclick="printWorksheet()">Make printable worksheet</div>
 		</div>
 
 	</div>
@@ -228,6 +228,7 @@
 	
 	<script src="read_write_data.js"></script>
 	<script src="wikipedia_fetcher.js"></script>
+	<script src="news_fetcher.js"></script>
 	<script src="shuffle.js"></script>
 	<script src="chunk_array.js"></script>
 	<script src="textmix.js"></script>
