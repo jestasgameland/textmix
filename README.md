@@ -12,7 +12,7 @@ RECENT UPDATES:
 - added "about" page
 - support for splitting sentences ending with different punctuation
 - option to create printable worksheet on save screen
-- support for "news headlines" as a text source (newsapi.org)
+- support for "news headlines" (newsapi.org) and list of words (Tatoeba corpus) as text sources
 
 TO DO:
 - More APIs as text sources, add more texts for student mode
