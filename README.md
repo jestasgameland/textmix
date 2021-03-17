@@ -12,14 +12,13 @@ RECENT UPDATES:
 - added "about" page
 - support for splitting sentences ending with different punctuation
 - option to create printable worksheet on save screen
-- support for "news headlines" (newsapi.org) and list of words (Tatoeba corpus) as text sources
+- support for news headlines (newsapi.org) and list of words (Tatoeba corpus) as text sources
 
 TO DO:
-- More APIs as text sources, add more texts for student mode
-- Wordnik API for getting examples senences with a list of target words the user enters - good for teachers to assign focused vocab exposure
-- JSON file size limit?  Eventually move to SQL database instead
-- Japanese language support (split sentences by "。" and "、" ).  But then how to split word???  (no spaces in Japanese) - could try Google Natural Language API
-- Kidz mode - uses an even simpler settings interface and special kids JSON file with kid-friendly texts
+- Add more texts to student mode (prepare to pilot on students to present results at TeLLT & CoLLT Conference in July, 2021
+- increase loading speed of Tatoeba corpus (large JSON file currently takes up to 30s)
+- Japanese language support using Tiny Segmenter: http://chasen.org/~taku/software/TinySegmenter/
+- Kidz mode - an even simpler settings interface and set of kid-friendly texts
 - User guide
 
 
