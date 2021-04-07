@@ -125,13 +125,21 @@ footer {
 	cursor: pointer;
 }
 
-#paste-div {
+#paste-div, #title-div {
 	display: none;
 }
 
 #challenges-container {
 	display: none;
 	width: 100%;
+}
+
+#attribution {
+	font-size: 14px;
+	font-family: Helvetica;
+	text-align: left;
+	margin: 30px 0px 50px 50px;
+	color: black;
 }
 
 .challenge {
@@ -154,11 +162,14 @@ footer {
 }
 
 #language-settings {
-	opacity: 50%;
+	opacity: 100%;
+}
+
+#paste-input, #title-input {
+	height: 200px;
 }
 
 #paste-input {
-	height: 200px;
 	width: 60vw;
 }
 

@@ -14,7 +14,7 @@ function readOrWriteData(saveId, readOrWrite, randMode, chunkSize, text, fileNam
 	    success : function(response) {
 	    	console.log("Read data successfully.");
 	    	existingData = response;  //existingData (JSON file) is an array of objects
-	    	console.log("existingData = " + existingData);
+	//    	console.log("existingData = " + existingData);
 
 	    	if (readOrWrite == 'write') { //if this function is used to write
 
@@ -23,8 +23,15 @@ function readOrWriteData(saveId, readOrWrite, randMode, chunkSize, text, fileNam
 	    		newObj.randomMode = randMode;
 	    		newObj.wordChunkSize = chunkSize;	
 	    		newObj.textArray = text;
+	    		newObj.level = levelName;
+	    		if (scraperMode) {newObj.title = newTitle}
+	    		else             {newObj.title = text[0].substr(0,20) + "..."}; //just set the title to first 20 characters
 	    		existingData.push(newObj);  //Step 2: push new data:
 	    		writeData(fileName);  //only run this once the getData() AJAX is finished
+
+	    		if (scraperMode) {
+	    			document.getElementById("scraper-message").innerHTML = "<br><br>This file now contains " + existingData.length + " texts";
+	    		}
 	    	}
 	    	else if (readOrWrite == 'read one text') {  //if this function is used only to read
 
@@ -42,10 +49,19 @@ function readOrWriteData(saveId, readOrWrite, randMode, chunkSize, text, fileNam
 				runApp(); // shove the load screen in front of everything until user is ready to press "START"
 	    	}
 	    	else if (readOrWrite == 'get all texts') {  //If we're just loading the texts to populate the preset challenges divs
-	    		presetTexts = [];  //reset it
-	    		for (i=0; i<existingData.length; i++) {
-	    			presetTexts.push(existingData[i].textArray);
+	    		presetTexts = [];  //reset these    
+
+	    		if (researchMode) {  // (researchMode json files (from BreakingNewsEnglish) have a different structure, so need separate directions for iterating)
+	    			for (i=0; i<existingData.listOfTexts.length; i++) {
+	    				presetTexts.push(existingData.listOfTexts[i].text);
+	    			}
 	    		}
+	    		else { 
+		    		for (i=0; i<existingData.length; i++) {
+		    			presetTexts.push(existingData[i].textArray);
+		    		}
+		    	}
+
 	    		makePresetTextDivs();  //need to include this here instead of index.html as callback function, can only be run once the presetTexts have been laoded
 	    	}
 	    	else{};
@@ -56,7 +72,7 @@ function readOrWriteData(saveId, readOrWrite, randMode, chunkSize, text, fileNam
 	
 function writeData(fileName) {	
 
-	//Step 3: post the newly updated existingData back to data.json:
+	//Step 3: post the newly updated existingData back to public_saved_texts.json:
 	$.ajax({
 	    type : "POST",
 	    url : "save.php",

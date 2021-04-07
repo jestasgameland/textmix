@@ -49,20 +49,39 @@ function pastePopup(yes) {
 	} else {
 		display = 'none';
 	};
+
 	document.getElementById('paste-div').style.display = display;
-	
+	if (scraperMode) { document.getElementById('title-div').style.display = display };
 }
 
 function challengesPopup(yes, textFile) {
 	var display;
 	if (yes) {
 		display = 'block';
-		if (!studentMode) { getSettings() };  
-		loadPresetTexts(textFile);
+		
+		if (!studentMode) {
+			getSettings();
+
+			if (needToLoadPresetText) {
+
+				loadAllLevels = true; //load studentmode texts from ALL levels
+				var levels = "beg hi_beg int hi_int adv".split(" ");
+				for (i=0; i<levels.length; i++) {
+					var fileName = "studentmode_texts/" + levels[i]+".json"
+
+					loadPresetTexts(fileName)
+				}
+				needToLoadPresetText = false;
+			}
+		}
+		else { loadPresetTexts(textFile) };  //studentmode, so just load one level of texts
+
 		document.getElementById('start-button').style.display = "none";
 		document.getElementById('quickstart-button').style.display = "none";
 		document.getElementById('save-button').style.display = "none";
-	} else {
+	} 
+
+	else {
 		display = 'none';
 		loadPresetTexts(textFile);
 		document.getElementById('start-button').style.display = "inline-block";
@@ -124,6 +143,7 @@ var imageVisible = false;
 var finishedSentences = 0;
 var needToCheckRadios = true;
 var needToLoadPresetText = true; //not loaded yet
+var loadAllLevels = false;  //for Teacher Mode, load the studentmode texts from ALL levels
 var winScreen;
 var reviewScreen;
 var youWon;
@@ -132,6 +152,10 @@ var saved;
 var existingData;
 var presetTexts = [];
 var printingWorksheet = false;
+var targetWords;
+var levelName;
+var levelNames = {'beg': 'Beginner', 'hi_beg': 'High-Beginner', 'int': 'Intermediate', 'hi_int': 'High-Intermediate', 'adv': 'Advanced'}
+var newTitle;
 
 //for research mode:
 var correctSentences = [];
@@ -148,42 +172,52 @@ var quitButton = document.getElementById("quit-button");
 var statusBar = document.getElementById("status-bar");
 var saveScreen = document.getElementById("save-screen");
 
-	//set up stuff:
-	undoButton.addEventListener("click", undo);
-	skipButton.addEventListener("click", ready);
-	quitButton.addEventListener("click", resetApp);
-	if (researchMode) {
-		var txt = "Save & Quit";
-		quitButton.innerHTML = txt;
-		document.getElementById("main-menu-button").innerHTML = txt;
-	};
-	document.getElementById("main-menu-button").addEventListener("click", resetApp);
-	document.getElementById("try-again-button").addEventListener("click", function() {
-		tryAgain = true;
-		resetApp();
-	});
-	document.getElementById("back").addEventListener("click", goToStartScreen);
-	document.getElementById('start-button').addEventListener("click", runApp);
-	document.getElementById('quickstart-button').addEventListener("click", function() {
-		needToCheckRadios = false;
-		document.getElementById('search-term').value = "tea";
-		runApp();
-	});
-	document.getElementById('save-button').addEventListener("click", saveAndShare);
+//set up stuff:
+undoButton.addEventListener("click", undo);
+skipButton.addEventListener("click", ready);
+quitButton.addEventListener("click", resetApp);
+if (researchMode) {
+	var txt = "Save & Quit";
+	quitButton.innerHTML = txt;
+	document.getElementById("main-menu-button").innerHTML = txt;
+};
+document.getElementById("main-menu-button").addEventListener("click", resetApp);
+document.getElementById("try-again-button").addEventListener("click", function() {
+	tryAgain = true;
+	resetApp();
+});
+document.getElementById("back").addEventListener("click", goToStartScreen);
+document.getElementById('start-button').addEventListener("click", runApp);
+document.getElementById('quickstart-button').addEventListener("click", function() {
+	needToCheckRadios = false;
+	document.getElementById('search-term').value = "tea";
+	runApp();
+});
+document.getElementById('save-button').addEventListener("click", saveAndShare);
 
-	document.getElementById("skip-button").style.display = "none";  
-	statusBar.style.display = "none";
+document.getElementById("skip-button").style.display = "none";  
+statusBar.style.display = "none";
 
 loadTxtFile("100commonwords.txt");  //load the grammarList
 
 
-//figure out where to write the data for scraper mode:
+//Setup scraper mode:
 var textFile;
-if (!scraperMode) {textFile = 'data.json'} //usual main JSON file
-else {
-	textFile = 'studentmode_texts/' + level + '.json';  // beg.json, hi_beg.json, etc.
-};
+if (!scraperMode) {textFile = 'public_saved_texts.json'} //usual main JSON file
+else { scraperModeSetup() };
 
+function scraperModeSetup() {
+	textFile = 'studentmode_texts/' + level + '.json';  // beg.json, hi_beg.json, etc.
+	levelName = levelNames[level];
+	setTeacherStudent(false);
+	disappear(document.getElementById('quickstart-button'));
+	disappear(document.getElementById('start-button'));
+	document.getElementById('save-button').innerHTML = 'Add text';
+	document.getElementById('paste-div').style.display = 'block';
+	pastePopup(true);
+	document.getElementById('radio-paste').checked = 'checked';
+	dataSource = 'paste';
+}
 
 
 //Set up start screen:
@@ -197,7 +231,7 @@ function goToStartScreen() {
 	disappear(document.getElementById('back'));
 }
 
-goToStartScreen()
+if (!scraperMode) { goToStartScreen() };
 
 if (researchMode) { 
 	disappear(document.getElementById('settings-area'));
@@ -212,8 +246,12 @@ function setTeacherStudent(student) {
 	//STUDENT MODE IS LIKE "CAMPAIGN MODE" - everything (except level and learning mode) is preset and ready to go 
 	if (student) {
 		studentMode = true;
+		level = 'int';
 		dataSource = "preset text";
-		challengesPopup(true, 'studentmode_texts/int.json');  //start with this set of challenges
+
+		if (researchMode) {challengesPopup(true, 'studentmode_texts/researchtexts.json')}
+		else {challengesPopup(true, 'studentmode_texts/int.json')};  //start with this set of challenges
+	
 		if (!researchMode) {document.getElementById('studentmode-level-settings').style.display = "block"};
 		if (!researchMode) {document.getElementById('learning-mode-settings').style.display = "block" }; //researchMode is only for sentence jumble activities (no cloze)
 	}
@@ -222,6 +260,7 @@ function setTeacherStudent(student) {
 		$('.settings-box').css("display","block");
 		disappear(document.getElementById('studentmode-level-settings'));
 		disappear(document.getElementById('paste-div'));
+		disappear(document.getElementById('title-div'));
 		disappear(document.getElementById('challenges-container'));
 		document.getElementById('start-button').style.display = "inline-block";
 		if (!mobile){document.getElementById('quickstart-button').style.display = "inline-block"};
@@ -252,19 +291,20 @@ function createPopupExplanations(thingToHoverOver, textToPopup) {
 	})
 }
 
-createPopupExplanations(document.getElementById('start-button'), "Start the game with the above settings.");
-createPopupExplanations(document.getElementById('quickstart-button'), "Start the game with a random text and default settings.");
-createPopupExplanations(document.getElementById('save-button'), "Create a game with the above settings and get a unique URL to share with students.");
+if (!scraperMode) {
+	createPopupExplanations(document.getElementById('start-button'), "Start the game with the above settings.");
+	createPopupExplanations(document.getElementById('quickstart-button'), "Start the game with a random text and default settings.");
+	createPopupExplanations(document.getElementById('save-button'), "Create a game with the above settings and get a unique URL to share with students.");
 
-createPopupExplanations(document.getElementById('wordchunk-settings'), "Choose how each sentence is split. '1' means a traditional word jumble where each word must be unscrambled.");
-createPopupExplanations(document.getElementById('game-mode-settings'), "Preset sentences randomly or in order.  In 'reading mode', completed sentences stay on the screen so you can ready the next sentence in context.");
-createPopupExplanations(document.getElementById('learning-mode-settings'), "Choose what kind of practice the activity should provide.");
-createPopupExplanations(document.getElementById('text-source-settings'), "Select the source of text. If 'Wikipedia', also select language and search term.");
-createPopupExplanations(document.getElementById('language-settings'), "(For Wikipedia text) Choose the language and search term to get an article exerpt. Case sensitive - must capitalize proper nouns!");
+	createPopupExplanations(document.getElementById('wordchunk-settings'), "Choose how each sentence is split. '1' means a traditional word jumble where each word must be unscrambled.");
+	createPopupExplanations(document.getElementById('game-mode-settings'), "Preset sentences randomly or in order.  In 'reading mode', completed sentences stay on the screen so you can ready the next sentence in context.");
+	createPopupExplanations(document.getElementById('learning-mode-settings'), "Choose what kind of practice the activity should provide.");
+	createPopupExplanations(document.getElementById('text-source-settings'), "Select the source of text. If 'Wikipedia', also select language and search term.");
+	createPopupExplanations(document.getElementById('language-settings'), "(For Wikipedia text) Choose the language and search term to get an article exerpt. Case sensitive - must capitalize proper nouns!");
 
-createPopupExplanations(document.getElementById('studentmode-button'), "Practice your English with fun sentence scramble and fill-in-the-blank games!");
-createPopupExplanations(document.getElementById('teachermode-button'), "Create a customized cloze or sentence scramble activity for your students.  Choose the text, format, and more.");
-
+	createPopupExplanations(document.getElementById('studentmode-button'), "Practice your English with fun sentence scramble and fill-in-the-blank games!");
+	createPopupExplanations(document.getElementById('teachermode-button'), "Create a customized cloze or sentence scramble activity for your students.  Choose the text, format, and more.");
+}
 
 //set up challenges
 function loadPresetTexts(jsonFileName) {
@@ -273,13 +313,15 @@ function loadPresetTexts(jsonFileName) {
 
 function makePresetTextDivs() {  //This function gets run by readOrWriteData after presetTexts have been loaded
 
-	if (needToLoadPresetText) {  // ifnot yet loaded
+//	if (needToLoadPresetText) {  // if not yet loaded
 		var challengesContainer = document.getElementById('challenges-container');
 
-			//first clear the challenges-container:
+		//first clear the challenges-container:
+		if (!loadAllLevels) {
 		    while (challengesContainer.firstChild) {
-					challengesContainer.removeChild(challengesContainer.firstChild);
-				}
+				challengesContainer.removeChild(challengesContainer.firstChild);
+			}
+		}
 
 			//make the preset text (challenge) divs:
 		for (i=0; i<presetTexts.length; i++) {
@@ -288,23 +330,40 @@ function makePresetTextDivs() {  //This function gets run by readOrWriteData aft
 			challengeDiv.setAttribute("id", "challenge-"+i);
 			challengesContainer.appendChild(challengeDiv);
 
-			challengeDiv.innerHTML = "<b>"+presetTexts[i][0].substr(0,40)+"...</b><br><br>( "+presetTexts[i].length+" sentences )";  //shows first 36 characters and length of text
+			var title;
+			if (researchMode) { title = existingData.listOfTexts[i].title }
+			else              { title = existingData[i].title}
 
+			challengeDiv.innerHTML = "<b>"+title+"</b>" + "<br><br>( "+presetTexts[i].length+" sentences )";
+			// Add the level to each challenge div, if loading all levels:
+			if (loadAllLevels) {challengeDiv.innerHTML += "<br>" + existingData[i].level} ;
 		};
 
 		//Once all the divs have been made, add the event listeners (must do this separately so it doesn't keep looping the creation of event listeners over just the variable challengeDiv):
 		for (i=0; i<presetTexts.length; i++) {
 			document.getElementById("challenge-"+i).addEventListener("click", function() {
 				var index = parseInt(this.id.substr(10));  //get the number of the challenge div (same as i, but can't use i here because i is part of this FOR loop, which can't be seen by the function later on)
-				rawText = presetTexts[index].join(". ");
-				listOfSentences = presetTexts[index];
+				
+				if (!researchMode) {  
+					rawText = presetTexts[index].join(". ")
+					listOfSentences = presetTexts[index];
+
+				}
+				else {  // research texts aren't split into sentences yet
+					rawText = presetTexts[index];
+					listOfSentences = splitText(presetTexts[index]);
+				}
+	
 				runApp();
 			});
 		}
+
+		if (studentMode && !researchMode) { showAttribution() };
+
 	};
 
-	if (!studentMode) {needToLoadPresetText = false;} //prevent it from loading again if this radio button is unclicked and then clicked again
-}
+//	if (!studentMode) {needToLoadPresetText = false;} //prevent it from loading again if this radio button is unclicked and then clicked again
+//}
 
 
 
@@ -339,16 +398,10 @@ function saveAndShare() {  //save the text you chose and spit out a URL to share
 	saveCode = randomColor().split("#")[1];  //get random string without the #
 	var urlToShare = location.protocol + '//' + location.host + location.pathname + "?loadsavedtext=yes" + "&savecode=" + saveCode;
 	var urlField = document.getElementById('saved-url-field');
-//	urlField.type = "text";
-//	urlField.size = 60;
-//	urlField.style.fontSize = "26px";
-//	urlField.id = "saved-url-field";
 	urlField.value = urlToShare;
 
-//	var saveScreen = createScreen("<br><br><br><h2>Share this link to your saved TextMix:</h2><br><br>");
 	$('#settings-screen').css('display','none');
 	$('#save-screen').css('display','block');
-//	document.body.appendChild(saveScreen);
 
 	urlField.onclick = function() {
 		this.select();
@@ -358,15 +411,11 @@ function saveAndShare() {  //save the text you chose and spit out a URL to share
 		saveScreen.appendChild(p); 
 	}
 
-	console.log("new saveCode = " + saveCode);
-	console.log("URL = " + urlToShare);
-
 	getSettings();
-
 
 	function writeWikiText() { //after wikiSearch is complete, run this as callback function.
 		rawText = document.getElementById("hidden-text-div").textContent;
-		listOfSentences = document.getElementById("hidden-text-div").textContent.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);
+		listOfSentences = splitText(document.getElementById("hidden-text-div").textContent);
 		readOrWriteData(saveCode, "write", randomMode, wordChunkSize, listOfSentences, textFile);
 	}
 
@@ -385,8 +434,6 @@ function saveAndShare() {  //save the text you chose and spit out a URL to share
 	document.getElementById('play-now').addEventListener("click", function() {
 		window.location.href = urlToShare;   // go to the link just created
 	});
-
-	$("#back-button-container").appendChild(playNowButton);
 }
 
 
@@ -513,28 +560,24 @@ function checkRadio(radioName) {
 			}
 			else if (radioName == "studentmode-level") {
 				randomMode = false;
-				wordChunkSize = parseInt(choices[i].value) + 1;
-				switch(parseInt(choices[i].value)) {
-					case 5:
-						challengesPopup(true, 'studentmode_texts/beg.json');
-					break;
-					case 4:
-						challengesPopup(true, 'studentmode_texts/hi_beg.json');
-					break;
-					case 3:
-						challengesPopup(true, 'studentmode_texts/int.json');
-					break;
-					case 2:
-						challengesPopup(true, 'studentmode_texts/hi_int.json');
-					break;
-					case 1:
-						challengesPopup(true, 'studentmode_texts/adv.json');
-					break;
-					default: alert("error");
+				wordChunkSize = 4;
+				level = choices[i].value;
+
+				if (researchMode && level == 'int') {
+					challengesPopup(true, 'studentmode_texts/researchtexts.json')
 				}
+				else { challengesPopup(true, 'studentmode_texts/' + level + '.json') };
+
 			}
 			else if (radioName == "datasource") {
 				dataSource = choices[i].value;
+
+				if (dataSource == 'words') {
+					document.getElementById('paste-input').placeholder="Enter a list of target vocabulary words, separated by commas.  Sentences will be generated based on these words."
+				}
+				if (dataSource == 'paste') {
+					document.getElementById('paste-input').placeholder="Paste some text!  About a paragraph or so is good.  A whole article is good for a challenge!"
+				}
 			}
 			else if (radioName == "learning") {
 				learningMode = choices[i].value;
@@ -576,6 +619,11 @@ function runApp() {
 			getText();
 		}		
 }
+
+function splitText(text) { //splits into sentences
+	sentences = text.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);    //regex negative lookbehind
+	return sentences;
+}
 									
                                          
 function cleanSentence(sentence) {        
@@ -595,7 +643,7 @@ function getOneSentence() {
 
 	if(dataSource == "wikipedia" && needToLoadSaved != "yes"){  //a.k.a. if we still need to send a request to wikipedia API
 		//hidden-text-div is where wikiSearch put the text
-		listOfSentences = document.getElementById("hidden-text-div").textContent.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);
+		listOfSentences = splitText(document.getElementById("hidden-text-div").textContent);
 	};
 
 	//if source is not wikipedia, listOfSentences was already set by getText()
@@ -706,7 +754,16 @@ function getText() {
 			break;
 
 		case "news":
-			newsSearch("hidden-text-div", ready);
+			newsSearch(ready);
+			break;
+
+		case "words":
+			wordChunkSize = 2;
+			targetWords = document.getElementById('paste-input').value.replace(/\s/g, "").split(',');
+			for (i=0; i<targetWords.length; i++) {
+				targetWords[i] = " " + targetWords[i] + " ";  //surround the word by spaces
+			}
+			getExampleSentences(targetWords, ready);
 			break;
 
 		case "wikipedia":
@@ -716,13 +773,14 @@ function getText() {
 
 		case "paste":
 			rawText = document.getElementById('paste-input').value.replace(/.  /g, ". ");  //remove double spaces
-			listOfSentences = rawText.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);  //regex negative lookbehind
-			ready();
+			listOfSentences = splitText(rawText);
+			if (scraperMode) {newTitle = document.getElementById('title-input').value}
+			ready();                  
 			break;
 
 		default:   //if user chose to use the preset string of sentences
 			rawText = preMadeList;
-			listOfSentences = preMadeList.split(/(?<!Mr|Mrs|Dr|Prof)\.\s|\."\s|\?\s/);
+			listOfSentences = splitText(preMadeList);
 			ready();
 	};	
 };
@@ -1124,9 +1182,14 @@ function goToReviewScreen() {
 
 
 addEventListener('keydown', function(event) {   //Press Enter to start
-	if (event.keyCode == 13) {
+	if (!scraperMode && event.keyCode == 13) {
 		runApp();
 	};
+
+	if (scraperMode && event.keyCode == 13) {
+		saveAndShare();
+	};
+
 });
 
 
@@ -1204,29 +1267,4 @@ function displayCharacter() {
 const preMadeList = "A library is a great blessing. A library is said to be the storehouse of culture. The various books by the different authors and poets form a library. A society is known by the number of good libraries it has. Man\'s craving for knowledge is eternal. Libraries preserve various types of old and new books. There are also periodicals and daily papers to meet the demands of the people. In all ages, libraries have been considered the best medium of public instructions. An academic library is an essential part of an educational institution. It plays an important role in schools, colleges and universities. The books are issued to the students in term of weekly, fortnightly or monthly basis. Generally a reading-room is attached to this library for reading. In a library we get books on different subjects. There are books on literature, on history, hygiene, science and arts. A library is essential to the cultural progress of a country. It helps the country to fight illiteracy. It is an aid to research work and teaching. It satisfies a thirst for education. It is a boon to the poor and the middle class people. A civilized man cannot do without the library. Circulating libraries should be established in rural areas to fight illiteracy. As libraries spread education, every village and town should have one.";
 
 
-
-//JQuery version of AJAX request::
-
-/*
-const getText = function() {
-
-	$.get('sentences.txt', function(data){})
-
-    .then(data => {	  // use this format to run function only after json get is done (since it's async)
-    				  // "data" is the contents of the text file
-		listOfSentences = data.split('\n');
-		console.log('Made sentence array');
-		prepareSentence();
-		makeDivs();
-
- 	});
-
-	makeDivs();
-
-};
-*/
-
-//To use a list of senences in Excel:
-//first convert list of sentences to JSON with this website: http://www.convertcsv.com/csv-to-json.htm
-//make sure to choose "CSV to JSON Array" at the bottom
 

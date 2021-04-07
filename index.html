@@ -1,19 +1,21 @@
 <!--	
 		Created by Brendon Albertson
+		albertsonbrendon@gmail.com
 -->
 
 <!DOCTYPE html>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script src="wikipedia_fetcher.js"></script>
+<html lang="en">
 
 <head>
+	<meta charset="utf-8">
 	<link rel="stylesheet" type="text/css" href="styles.css">
+
 	<meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
 	<link href="https://fonts.googleapis.com/css?family=Poiret+One" rel="stylesheet">
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
-
+	<title>TextMix - Created by Brendon Albertson</title>
 
 	<!--for featured image on linkedin:  -->
 	<meta name="description" content="TextMix - Created by Brendon Albertson" />
@@ -22,9 +24,12 @@
 	<meta name="image" property="og:image" content="http://www.eslquiz.net/screenshot-textmix.png" />
 	<meta name="description" property="og:description" content="TextMix - Created by Brendon Albertson" /><meta name="author" content="Brendon Albertson" />
 
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
 </head>
 	
 <body>
+
 
 	<div id='settings-screen'>
 		<div id='back' onclick='goToStartScreen()'>&nbsp;&#8249; Back</div>
@@ -61,15 +66,15 @@
 
 			<div class="settings-box" id="studentmode-level-settings">
 				<h3>Level</h3>
-				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-beg" name="studentmode-level" value="5">  
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-beg" name="studentmode-level" value="beg">  
 				<label for="radio-studentmode-beg">Beginner</label><br>
-				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-hibeg" name="studentmode-level" value="4" checked="checked">
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-hibeg" name="studentmode-level" value="hi_beg">
 				<label for="radio-studentmode-hibeg">High Beginner</label><br>
-				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-int" name="studentmode-level" value="3">
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-int" name="studentmode-level" value="int" checked="checked">
 				<label for="radio-studentmode-int">Intermediate</label><br>
-				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-hiint" name="studentmode-level" value="2">
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-hiint" name="studentmode-level" value="hi_int">
 				<label for="radio-studentmode-hiint">High Intermediate</label><br>
-				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-adv" name="studentmode-level" value="1">
+				<input type="radio" onclick="checkRadio('studentmode-level')" id="radio-studentmode-adv" name="studentmode-level" value="adv">
 				<label for="radio-studentmode-adv">Advanced</label><br>
 			</div>
 
@@ -88,17 +93,17 @@
 			</div>
 
 			<div class="settings-box" id='learning-mode-settings'>
-				<h3>Learning Focus</h3>
+				<h3>Activity Type</h3>
 				<input type="radio" id="radio-learning-jumble" name="learning" value="jumble" checked="checked" >
 				<label for="radio-learning-jumble">Syntax / word order</label><br>
 				<input type="radio" id="radio-learning-articles" name="learning" value="articles" >
-				<label for="radio-learning-articles">Articles</label><br>
+				<label for="radio-learning-articles">Articles Cloze</label><br>
 				<input type="radio" id="radio-learning-prepositions" name="learning" value="prepositions">
-				<label for="radio-learning-prepositions">Prepositions</label><br>
+				<label for="radio-learning-prepositions">Prepositions Cloze</label><br>
 				<input type="radio" id="radio-learning-grammar" name="learning" value="grammar">
-				<label for="radio-learning-grammar">Common words</label><br>
+				<label for="radio-learning-grammar">Common words Cloze</label><br>
 				<input type="radio" id="radio-learning-cloze" name="learning" value="cloze">
-				<label for="radio-learning-cloze">Cloze (Gap fill)</label><br>
+				<label for="radio-learning-cloze">Random words Cloze</label><br>
 			</div>
 
 
@@ -106,7 +111,10 @@
 				<h3>Text source</h3>
 
 				<input onclick="languagePopup(false); pastePopup(false); challengesPopup(false)" type="radio" id="radio-news" name="datasource" value="news" checked="checked">
-				<label for="radio-news">News Headlines (NEW!)</label><br>
+				<label for="radio-news">News Headlines</label><br>
+
+				<input onclick="languagePopup(false); pastePopup(true); challengesPopup(false)" type="radio" id="radio-words" name="datasource" value="words">
+				<label for="radio-words">Enter words</label><br>
 
 				<input onclick="languagePopup(true); pastePopup(false); challengesPopup(false)" type="radio" id="radio-wikipedia" name="datasource" value="wikipedia">
 				<label for="radio-wikipedia">Wikipedia</label><br>
@@ -143,6 +151,10 @@
 				<h3>Paste text here:</h3>
 				<textarea id="paste-input"  name="paste-input" placeholder="Paste some text!  About a paragraph or so is good.  A whole article is good for a challenge!" required></textarea>
 			</div>
+			<div class="settings-box" id='title-div'>
+				<h3>Title:</h3>
+				<textarea id="title-input" name="title-input" required></textarea>
+			</div>
 		</div>
 
 		<div class="row">
@@ -150,6 +162,7 @@
 				<h3>Challenges:</h3>
 			</div>
 		</div>
+		<div id='attribution'></div>
 		
 		<div class="row">
 			<div id='start-button' class="launcher-button">
@@ -183,6 +196,7 @@
 			<div class="launcher-button" style="display: inline-block" onclick="setTeacherStudent(false)">&#8249; Back</div>
 			<div class="launcher-button" id='play-now' style="display: inline-block">Play Now</div>
 			<div class="launcher-button" id='print' style="display: inline-block; font-size: .4em" onclick="printWorksheet()">Make printable worksheet</div>
+			<div id='scraper-message'></div>
 		</div>
 
 	</div>
@@ -229,8 +243,10 @@
 	<script src="read_write_data.js"></script>
 	<script src="wikipedia_fetcher.js"></script>
 	<script src="news_fetcher.js"></script>
+	<script src="sentences_fetcher.js"></script>
 	<script src="shuffle.js"></script>
 	<script src="chunk_array.js"></script>
+	<script src="attribution.js"></script>
 	<script src="textmix.js"></script>
 	
 
